@@ -69,6 +69,27 @@ ScaffoldingReadMe.txt
 # StyleCop
 StyleCopReport.xml
 
+# Platforms (Android, iOS, macOS, Windows UI intermediate output)
+**/Platforms/**/bin/
+**/Platforms/**/obj/
+
+# Mobile & desktop app package outputs
+*.apk
+*.aab
+*.apks
+*.ipa
+*.app
+*.msix
+*.msixbundle
+*.appxbundle
+*.appxupload
+*.msi
+
+# Certificates & signing keys
+*.pfx
+*.keystore
+*.jks
+
 # Files built by Visual Studio
 *_i.c
 *_p.c
