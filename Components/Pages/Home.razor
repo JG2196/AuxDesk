@@ -1,5 +1,84 @@
-﻿@page "/"
+﻿@using Data;
+@using Microsoft.Maui.Storage
+@using System.IO
+@using System.Text.Json
+
+@page "/"
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+<br />
+<br />
+
+<button @onclick="Save">Save</button>
+<button @onclick="Load">Load</button>
+
+<ul class="list-unstyled">
+    @foreach (var task in listUserTasks)
+    {
+        <li>
+            <input class="form-control" type="checkbox" @bind="task.IsDone" />
+            <input @bind="task.Title" />
+            <input @bind="task.Notes" />
+            <input @bind="task.Priority" />
+            <input @bind="task.Effort" />
+            <input @bind="task.StartDate" />
+        </li>
+    }
+</ul>
+
+<input type="text" placeholder="Title..." @bind="taskTitle" />
+<input type="text" placeholder="Notes..." @bind="taskNotes" />
+<input type="number" placeholder="Priority" @bind="taskPriority" />
+<input type="number" placeholder="Effort..." @bind="taskEffort" />
+<input type="date" @bind="taskDate" />
+<button @onclick="AddTask">Add task</button>
+
+@code {
+    private List<UserTask> listUserTasks = new();
+    private string? taskTitle;
+    private string? taskNotes;
+    private int taskPriority;
+    private int taskEffort;
+    private DateOnly taskDate;
+
+    private void AddTask()
+    {
+        if (!string.IsNullOrWhiteSpace(taskTitle))
+        {
+            listUserTasks.Add(new UserTask { 
+                Title = taskTitle,
+                Notes = taskNotes,
+                Priority = taskPriority,
+                Effort = taskEffort,
+                StartDate = taskDate
+            });
+            taskTitle = string.Empty;
+            taskNotes = string.Empty;
+            taskPriority = 0;
+            taskEffort = 0;
+            taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        }
+    }
+    private async Task Save()
+    {
+        var contents = JsonSerializer.Serialize(listUserTasks);
+
+        // FileSystem.AppDataDirectory - points to your app’s sandboxed data folder
+        var path = Path.Combine(FileSystem.AppDataDirectory, "userTasks.json");
+
+        File.WriteAllText(path, contents);
+        await App.Current.MainPage.DisplayAlert("List Saved", $"List has been saved to {path}", "OK");
+    }
+    private void Load()
+    {
+        var path = Path.Combine(FileSystem.AppDataDirectory, "userTasks.json");
+        if (!File.Exists(path))
+            return;
+        var contents = File.ReadAllText(path);
+        var savedItems = JsonSerializer.Deserialize<List<UserTask>>(contents);
+        listUserTasks.Clear();
+        listUserTasks.AddRange(savedItems);
+    }
+}
