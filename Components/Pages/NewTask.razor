@@ -1,0 +1,44 @@
+﻿@page "/newTask"
+
+<h3>NewTask</h3>
+
+<div class="input-group mb-3">
+    <input type="text" class="form-control" aria-label="Text input with dropdown button" placeholder="Title">
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdown" type="button">
+            @selectedPriority
+        </button>
+        <ul class="dropdown-menu @(isDropdownOpen ? "show" : "")" style="@(isDropdownOpen ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
+            <li><a class="dropdown-item" @onclick="@( () => SelectPriority("High"))">High</a></li>
+            <li><a class="dropdown-item" @onclick="@( () => SelectPriority("Medium"))">Medium</a></li>
+            <li><a class="dropdown-item" @onclick="@(() => SelectPriority("Low"))">Low</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="input-group mb-3">
+    <span class="input-group-text" id="inputGroup-sizing-default">Start Date</span>
+    <input type="date" class="form-control" aria-label="Sizing example input" @bind="taskDate" aria-describedby="inputGroup-sizing-default">
+</div>
+
+<div class="input-group">
+    <textarea class="form-control" aria-label="With textarea" placeholder="Notes" height="30%"></textarea>
+</div>
+
+@code {
+    private bool isDropdownOpen = false;
+    private string selectedPriority = "Priority";
+
+    private void ToggleDropdown()
+    {
+        isDropdownOpen = !isDropdownOpen;
+    }
+
+    private void SelectPriority(string priority)
+    {
+        selectedPriority = priority;
+        isDropdownOpen = false;
+    }
+
+    DateOnly taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
+}

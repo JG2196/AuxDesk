@@ -7,9 +7,6 @@
 
 <h1>AuxDesk</h1>
 
-<button @onclick="Save">Save</button>
-<button @onclick="Load">Load</button>
-
 @foreach (var task in listUserTasks)
 {
     <div class="card" style="width: 18rem; margin-bottom: 4px; margin-top: 4px">
@@ -24,7 +21,7 @@
 <input type="text" placeholder="Title..." @bind="taskTitle" />
 <input type="text" placeholder="Notes..." @bind="taskNotes" />
 <input type="number" placeholder="Priority" @bind="taskPriority" />
-<input type="date" @bind="taskDate" />
+<input type="date" @bind="taskDate"/>
 <button @onclick="AddTask">Add task</button>
 
 @code {
@@ -35,7 +32,14 @@
     private int taskEffort;
     private DateOnly taskDate;
 
-    private void AddTask()
+    // Load tasks once initialized
+    protected override void OnInitialized()
+    {
+        taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        Load();
+    }
+
+    private async Task AddTask()
     {
         if (!string.IsNullOrWhiteSpace(taskTitle))
         {
@@ -59,6 +63,8 @@
             taskNotes = string.Empty;
             taskPriority = 0;
             taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            await Save();
         }
     }
     private async Task Save()
@@ -69,7 +75,8 @@
         var path = Path.Combine(FileSystem.AppDataDirectory, "userTasks.json");
 
         File.WriteAllText(path, contents);
-        await App.Current.MainPage.DisplayAlert("List Saved", $"List has been saved to {path}", "OK");
+
+        Console.WriteLine("List Saved", $"List has been saved to {path}");
     }
     private void Load()
     {
