@@ -5,33 +5,25 @@
 
 @page "/"
 
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
-<br />
-<br />
+<h1>AuxDesk</h1>
 
 <button @onclick="Save">Save</button>
 <button @onclick="Load">Load</button>
 
-<ul class="list-unstyled">
-    @foreach (var task in listUserTasks)
-    {
-        <li>
-            <input class="form-control" type="checkbox" @bind="task.IsDone" />
-            <input @bind="task.Title" />
-            <input @bind="task.Notes" />
-            <input @bind="task.Priority" />
-            <input @bind="task.Effort" />
-            <input @bind="task.StartDate" />
-        </li>
-    }
-</ul>
+@foreach (var task in listUserTasks)
+{
+    <div class="card" style="width: 18rem; margin-bottom: 4px; margin-top: 4px">
+        <div class="card-body">
+            <h5 class="card-title">@task.UserTaskData.Title</h5>
+            <h6 class="card-subtitle mb-2 text-body-secondary">@task.AssignedDate</h6>
+            <p class="card-text">@task.UserTaskData.Notes</p>
+        </div>
+    </div>
+}
 
 <input type="text" placeholder="Title..." @bind="taskTitle" />
 <input type="text" placeholder="Notes..." @bind="taskNotes" />
 <input type="number" placeholder="Priority" @bind="taskPriority" />
-<input type="number" placeholder="Effort..." @bind="taskEffort" />
 <input type="date" @bind="taskDate" />
 <button @onclick="AddTask">Add task</button>
 
@@ -47,17 +39,25 @@ Welcome to your new app.
     {
         if (!string.IsNullOrWhiteSpace(taskTitle))
         {
-            listUserTasks.Add(new UserTask { 
+            string taskGUID = Guid.NewGuid().ToString();
+
+            TaskData taskData = new TaskData
+            {
+                TaskGUID = taskGUID,
                 Title = taskTitle,
                 Notes = taskNotes,
+            };
+
+            listUserTasks.Add(new UserTask { 
+                TaskGUID = taskGUID,
+                AssignedDate = taskDate,
                 Priority = taskPriority,
-                Effort = taskEffort,
-                StartDate = taskDate
+                UserTaskData = taskData
             });
+
             taskTitle = string.Empty;
             taskNotes = string.Empty;
             taskPriority = 0;
-            taskEffort = 0;
             taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
         }
     }
