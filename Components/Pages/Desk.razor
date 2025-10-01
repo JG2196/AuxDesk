@@ -62,7 +62,7 @@
                                         <button type="button" class="btn btn-primary">Open</button>
                                     </div>
                                     <div class="btn-group" style="padding-left:8px">
-                                        <button type="button" class="btn btn-danger">Delete</button>
+                                        <button type="button" class="btn btn-danger" @onclick="() => DeleteTask(userTask.TaskGUID)">Delete</button>
                                     </div>
                                 </div>
                             </div>
@@ -91,10 +91,13 @@
     private List<UserTask> listDaysUserTasks = new List<UserTask>();
     DateOnly taskDate;
 
+    // FileSystem.AppDataDirectory - points to your app’s sandboxed data folder
+    private readonly string taskPath = Path.Combine(FileSystem.AppDataDirectory, "userTasks.json");
+
     protected override void OnInitialized()
     {
         taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
-        Load(taskDate);
+        Load();
     }
 
     private void DirectToNewTask()
@@ -107,21 +110,54 @@
         DateOnly newDate;
 
         DateOnly.TryParse(e.Value.ToString(), out newDate);
-        Load(newDate);
+        taskDate = newDate;
+        Load();
     }
 
-    private void Load(DateOnly date)
+    private List<UserTask> GetUserTasks()
     {
         List<UserTask> listUserTasks = new();
 
-        var path = Path.Combine(FileSystem.AppDataDirectory, "userTasks.json");
-        if (!File.Exists(path))
-            return;
-        var contents = File.ReadAllText(path);
+        if (!File.Exists(taskPath)) { return null; }
+
+        var contents = File.ReadAllText(taskPath);
         var savedItems = JsonSerializer.Deserialize<List<UserTask>>(contents);
         listUserTasks.AddRange(savedItems);
 
-        listDaysUserTasks = listUserTasks.Where(task => task.AssignedDate == date).ToList();
-        listDaysUserTasks = listDaysUserTasks.OrderBy(task => task.Priority).ToList();
+        return listUserTasks;
+    }
+
+    private List<UserTask> FilterTasks(List<UserTask> listUserTasks)
+    {
+        List<UserTask> filterUserTasks = listUserTasks.Where(task => task.AssignedDate == taskDate).ToList();
+        filterUserTasks = filterUserTasks.OrderBy(task => task.Priority).ToList();
+
+        return filterUserTasks;
+    }
+
+    private void Load()
+    {
+        List<UserTask> listUserTasks = GetUserTasks();
+        listDaysUserTasks = FilterTasks(listUserTasks);
+    }
+
+    private void DeleteTask(string taskGUID)
+    {
+        List<UserTask> listUserTasks = GetUserTasks();
+
+        listUserTasks.RemoveAll(task => task.TaskGUID == taskGUID);
+
+        Save(listUserTasks);
+
+        listDaysUserTasks = FilterTasks(listUserTasks);
+    }
+
+    private async Task Save(List<UserTask> listUserTasks)
+    {
+        var contents = JsonSerializer.Serialize(listUserTasks);
+
+        File.WriteAllText(taskPath, contents);
+
+        Console.WriteLine("List Saved", $"List has been saved to {taskPath}");
     }
 }
