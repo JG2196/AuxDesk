@@ -1,4 +1,5 @@
 ﻿@using Data;
+@using AuxDeskServices;
 @using Microsoft.Maui.Storage
 @using System.IO
 @using System.Text.Json
@@ -91,9 +92,6 @@
     private List<UserTask> listDaysUserTasks = new List<UserTask>();
     DateOnly taskDate;
 
-    // FileSystem.AppDataDirectory - points to your app’s sandboxed data folder
-    private readonly string taskPath = Path.Combine(FileSystem.AppDataDirectory, "userTasks.json");
-
     protected override void OnInitialized()
     {
         taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -114,19 +112,6 @@
         Load();
     }
 
-    private List<UserTask> GetUserTasks()
-    {
-        List<UserTask> listUserTasks = new();
-
-        if (!File.Exists(taskPath)) { return null; }
-
-        var contents = File.ReadAllText(taskPath);
-        var savedItems = JsonSerializer.Deserialize<List<UserTask>>(contents);
-        listUserTasks.AddRange(savedItems);
-
-        return listUserTasks;
-    }
-
     private List<UserTask> FilterTasks(List<UserTask> listUserTasks)
     {
         List<UserTask> filterUserTasks = listUserTasks.Where(task => task.AssignedDate == taskDate).ToList();
@@ -137,27 +122,23 @@
 
     private void Load()
     {
-        List<UserTask> listUserTasks = GetUserTasks();
+        AuxDeskServices _auxDeskServices = new AuxDeskServices();
+
+        List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
         listDaysUserTasks = FilterTasks(listUserTasks);
     }
 
     private void DeleteTask(string taskGUID)
     {
-        List<UserTask> listUserTasks = GetUserTasks();
+        AuxDeskServices _auxDeskServices = new AuxDeskServices();
+
+        List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
 
         listUserTasks.RemoveAll(task => task.TaskGUID == taskGUID);
 
-        Save(listUserTasks);
+        _auxDeskServices.Save(listUserTasks);
 
         listDaysUserTasks = FilterTasks(listUserTasks);
     }
 
-    private async Task Save(List<UserTask> listUserTasks)
-    {
-        var contents = JsonSerializer.Serialize(listUserTasks);
-
-        File.WriteAllText(taskPath, contents);
-
-        Console.WriteLine("List Saved", $"List has been saved to {taskPath}");
-    }
 }

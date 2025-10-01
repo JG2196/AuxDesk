@@ -1,4 +1,5 @@
 ﻿@using Data;
+@using AuxDeskServices;
 @using Microsoft.Maui.Storage
 @using System.IO
 @using System.Text.Json
@@ -53,7 +54,9 @@
 
     protected override void OnInitialized()
     {
-        Load();
+        AuxDeskServices _auxDeskServices = new AuxDeskServices();
+
+        listUserTasks = _auxDeskServices.GetUserTasks();
     }
 
     private void ToggleDropdownPriority()
@@ -106,24 +109,8 @@
     }
     private async Task Save()
     {
-        var contents = JsonSerializer.Serialize(listUserTasks);
-
-        // FileSystem.AppDataDirectory - points to your app’s sandboxed data folder
-        var path = Path.Combine(FileSystem.AppDataDirectory, "userTasks.json");
-
-        File.WriteAllText(path, contents);
-
-        Console.WriteLine("List Saved", $"List has been saved to {path}");
+        AuxDeskServices _auxDeskServices = new AuxDeskServices();
+        _auxDeskServices.Save(listUserTasks);
         await App.Current.MainPage.DisplayAlert("Task Saved", $"Task saved sucessfully", "OK");
-    }
-    private void Load()
-    {
-        var path = Path.Combine(FileSystem.AppDataDirectory, "userTasks.json");
-        if (!File.Exists(path))
-            return;
-        var contents = File.ReadAllText(path);
-        var savedItems = JsonSerializer.Deserialize<List<UserTask>>(contents);
-        listUserTasks.Clear();
-        listUserTasks.AddRange(savedItems);
     }
 }
