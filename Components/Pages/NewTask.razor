@@ -27,8 +27,8 @@
     <input type="date" class="form-control" aria-label="Sizing example input" @bind="taskDate">
 </div>
 
-<div class="input-group">
-    <textarea class="form-control" aria-label="With textarea" placeholder="Notes" height="30%" @bind="taskNotes"></textarea>
+<div class="input-group" style="height:30vh">
+    <textarea class="form-control" aria-label="With textarea" placeholder="Notes" @bind="taskNotes"></textarea>
 </div>
 
 <div class="btn-toolbar" role="toolbar" style="margin-top:16px">
@@ -45,8 +45,6 @@
     private string? taskTitle;
     private string? taskNotes;
     private int taskPriority = 2;
-
-    //private DateOnly taskDate;
 
     DateOnly taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
@@ -67,19 +65,10 @@
     {
         taskPriority = priority;
         isDropdownOpenPriorty = false;
-
-        if (priority == 1)
-        {
-            selectedPriority = "High";
-        }
-        if (priority == 2)
-        {
-            selectedPriority = "Medium";
-        }
-        else
-        {
-            selectedPriority = "Low";
-        }
+        selectedPriority = "Low";
+        
+        if (priority == 1) { selectedPriority = "High"; }
+        else if (priority == 2) { selectedPriority = "Medium"; }
     }
     private void CancelTask()
     {
@@ -109,7 +98,7 @@
 
             taskTitle = string.Empty;
             taskNotes = string.Empty;
-            taskPriority = 1;
+            SelectPriority(2);
             taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
             await Save();
@@ -125,6 +114,7 @@
         File.WriteAllText(path, contents);
 
         Console.WriteLine("List Saved", $"List has been saved to {path}");
+        await App.Current.MainPage.DisplayAlert("Task Saved", $"Task saved sucessfully", "OK");
     }
     private void Load()
     {
