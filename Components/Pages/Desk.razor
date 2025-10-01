@@ -16,14 +16,13 @@
             <h5><b>Weeks Tasks</b></h5>
             <div class="input-group mb-3  text-center">
                 <span class="input-group-text" id="inputGroup-sizing-default">Date</span>
-                <input type="date" class="form-control" aria-label="Sizing example input" @onchange="SelectDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" aria-describedby="inputGroup-sizing-default">
-                    
+                <input type="date" class="form-control" aria-label="Sizing example input" @onchange="SelectDate" value="@taskDate.ToString("yyyy-MM-dd")" aria-describedby="inputGroup-sizing-default">
             </div>
             <button type="button" class="btn btn-primary" style="width:100%" @onclick="DirectToNewTask" ><b>+</b></button>
             
             @foreach (UserTask userTask in listDaysUserTasks)
             {
-                <div class="card" style="margin-top:8px">
+                <div class="card" style="margin-top:8px" @onclick="() => SelectTask(userTask.TaskGUID)">
                     <div class="card-body">
                         <div class="row">
                             <div class="col">
@@ -71,11 +70,40 @@
                     </div>
                 </div>
             }
+            <div class="card" @onclick="ShowProgress" style="margin-top:8px">
+                <div class="card-header"><b>Completed: @ConpletedTasks/@TotalTasks</b></div>
+                <div class="card-body" style="display:@ProgressDisplay">
+                    <h6>Not started: @NotStartedTasks</h6>
+                    <h6>In progress: @InProgressTasks</h6>
+                </div>
+            </div>
         </div>
     </div>
         
     <div class="col">
-        <div class="p-2">Task</div>
+        <div class="p-2">
+            <h5><b>Current Task</b></h5>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Title..." value="@selectedTask.UserTaskData.Title" disabled>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownPriority" type="button">
+                        @selectedPriority
+                    </button>
+                    <ul class="dropdown-menu @(isDropdownOpenPriorty ? "show" : "")" style="@(isDropdownOpenPriorty ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
+                        <li><a class="dropdown-item" @onclick="@(() => SelectPriority(1))">High</a></li>
+                        <li><a class="dropdown-item" @onclick="@(() => SelectPriority(2))">Medium</a></li>
+                        <li><a class="dropdown-item" @onclick="@(() => SelectPriority(3))">Low</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="input-group mb-3  text-center">
+                <span class="input-group-text" id="inputGroup-sizing-default">Date</span>
+                <input type="date" class="form-control" aria-label="Sizing example input" value="@selectedTask.AssignedDate.ToString("yyyy-MM-dd")" aria-describedby="inputGroup-sizing-default">
+            </div>
+            <div class="input-group" style="height:60vh">
+                <textarea class="form-control" aria-label="With textarea" placeholder="Notes">@selectedTask.UserTaskData.Notes</textarea>
+            </div>
+        </div>
     </div>
         
     <div class="col">
@@ -90,7 +118,18 @@
 @code {
 
     private List<UserTask> listDaysUserTasks = new List<UserTask>();
+    private UserTask selectedTask = new UserTask();
     DateOnly taskDate;
+    public string ProgressDisplay = "none";
+    public int ConpletedTasks = 0;
+    public int NotStartedTasks = 0;
+    public int InProgressTasks = 0;
+    public int TotalTasks = 0;
+    public bool BProgressExpanded = false;
+
+    private bool isDropdownOpenPriorty = false;
+    private string selectedPriority = "Medium";
+    private int taskPriority = 2;
 
     protected override void OnInitialized()
     {
@@ -120,12 +159,33 @@
         return filterUserTasks;
     }
 
+    private void ToggleDropdownPriority()
+    {
+        isDropdownOpenPriorty = !isDropdownOpenPriorty;
+    }
+
+    private void SelectPriority(int priority)
+    {
+        taskPriority = priority;
+        isDropdownOpenPriorty = false;
+        selectedPriority = "Low";
+
+        if (priority == 1) { selectedPriority = "High"; }
+        else if (priority == 2) { selectedPriority = "Medium"; }
+    }
+
+
     private void Load()
     {
         AuxDeskServices _auxDeskServices = new AuxDeskServices();
 
         List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
         listDaysUserTasks = FilterTasks(listUserTasks);
+
+        TotalTasks = listDaysUserTasks.Count;
+        ConpletedTasks = listDaysUserTasks.Count(task => task.EndDateTime != null && task.IsDone);
+        NotStartedTasks = listDaysUserTasks.Count(task => task.StartDateTime == null);
+        InProgressTasks = listDaysUserTasks.Count(task => task.StartDateTime != null && !task.IsDone);
     }
 
     private void DeleteTask(string taskGUID)
@@ -141,4 +201,22 @@
         listDaysUserTasks = FilterTasks(listUserTasks);
     }
 
+    private void ShowProgress()
+    {
+        if (BProgressExpanded)
+        {
+            ProgressDisplay = "none";
+            BProgressExpanded = false;
+        }
+        else
+        {
+            ProgressDisplay = "block";
+            BProgressExpanded = true;
+        }
+    }
+
+    private void SelectTask(string taskGUID)
+    {
+        selectedTask = listDaysUserTasks.FirstOrDefault(task => task.TaskGUID == taskGUID);
+    }
 }
