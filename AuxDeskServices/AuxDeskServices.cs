@@ -9,7 +9,7 @@ using AuxDesk.Data;
 
 namespace AuxDesk.AuxDeskServices
 {
-    public class AuxDeskServices
+    public partial class AuxDeskServices
     {
         // FileSystem.AppDataDirectory - points to your app’s sandboxed data folder
         private readonly string taskPath = Path.Combine(FileSystem.AppDataDirectory, "userTasks.json");

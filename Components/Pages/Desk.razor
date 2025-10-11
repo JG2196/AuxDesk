@@ -117,6 +117,7 @@
 
 @code {
 
+    AuxDeskServices _auxDeskServices = new AuxDeskServices();
     private List<UserTask> listDaysUserTasks = new List<UserTask>();
     private UserTask selectedTask = new UserTask();
     DateOnly taskDate;
@@ -135,6 +136,7 @@
     {
         taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
         Load();
+        _auxDeskServices.CRUDPermenentDelete();
     }
 
     private void DirectToNewTask()
@@ -178,7 +180,7 @@
 
     private void Load()
     {
-        AuxDeskServices _auxDeskServices = new AuxDeskServices();
+        //AuxDeskServices _auxDeskServices = new AuxDeskServices();
 
         List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
 
@@ -196,7 +198,7 @@
 
     private void DeleteTask(string taskGUID)
     {
-        AuxDeskServices _auxDeskServices = new AuxDeskServices();
+        //AuxDeskServices _auxDeskServices = new AuxDeskServices();
 
         List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
 
