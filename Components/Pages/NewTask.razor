@@ -110,7 +110,7 @@
     private async Task Save()
     {
         AuxDeskServices _auxDeskServices = new AuxDeskServices();
-        _auxDeskServices.Save(listUserTasks);
+        _auxDeskServices.Save(listUserTasks, null, false);
         await App.Current.MainPage.DisplayAlert("Task Saved", $"Task saved sucessfully", "OK");
     }
 }

@@ -13,26 +13,71 @@ namespace AuxDesk.AuxDeskServices
     {
         // FileSystem.AppDataDirectory - points to your app’s sandboxed data folder
         private readonly string taskPath = Path.Combine(FileSystem.AppDataDirectory, "userTasks.json");
+        private readonly string deletedTaskPath = Path.Combine(FileSystem.AppDataDirectory, "recycleTask.json");
+
 
         public List<UserTask> GetUserTasks()
         {
-            List<UserTask> listUserTasks = new();
+            List<UserTask> listUserTasks = new List<UserTask>();
 
-            if (!File.Exists(taskPath)) { return null; }
+            if (!File.Exists(taskPath)) { return listUserTasks; }
 
             var contents = File.ReadAllText(taskPath);
+            
             var savedItems = JsonSerializer.Deserialize<List<UserTask>>(contents);
             listUserTasks.AddRange(savedItems);
 
             return listUserTasks;
         }
-        public async Task Save(List<UserTask> listUserTasks)
+        public List<DeletedTask> GetDeletedTasks()
         {
-            var contents = JsonSerializer.Serialize(listUserTasks);
+            List<DeletedTask> listDeletedTasks = new List<DeletedTask>();
 
-            File.WriteAllText(taskPath, contents);
+            if (!File.Exists(deletedTaskPath)) { return listDeletedTasks; }
+
+            var contents = File.ReadAllText(deletedTaskPath);
+        
+            var savedItems = JsonSerializer.Deserialize<List<DeletedTask>>(contents);
+            listDeletedTasks.AddRange(savedItems);
+
+            return listDeletedTasks;
+        }
+        public void Save(List<UserTask>? listUserTasks, List<DeletedTask>? listDeletedTasks, bool setDeletedTasks)
+        {
+            var contents = string.Empty;
+
+            if (listUserTasks != null)
+            {
+                contents = JsonSerializer.Serialize(listUserTasks);
+            }
+            else
+            {
+                contents = JsonSerializer.Serialize(listDeletedTasks);
+            }
+
+            if (!setDeletedTasks)
+            {
+                File.WriteAllText(taskPath, contents);
+            }
+            else
+            {
+                File.WriteAllText(deletedTaskPath, contents);
+            }
 
             Console.WriteLine("List Saved", $"List has been saved to {taskPath}");
+        }
+        public void DeleteTask(DeletedTask deletedTask)
+        {
+            List<DeletedTask>? listDeletedTasks = GetDeletedTasks();
+
+            if (listDeletedTasks == null)
+            {
+                listDeletedTasks = new List<DeletedTask>();
+            }
+
+            listDeletedTasks.Add(deletedTask);
+
+            Save(null, listDeletedTasks, true);
         }
     }
 

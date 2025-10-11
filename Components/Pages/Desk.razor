@@ -22,10 +22,10 @@
             
             @foreach (UserTask userTask in listDaysUserTasks)
             {
-                <div class="card" style="margin-top:8px" @onclick="() => SelectTask(userTask.TaskGUID)">
+                <div class="card" style="margin-top:8px">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col">
+                            <div class="col" @onclick="() => SelectTask(userTask.TaskGUID)">
                                 <h6 class="card-title"><b>@userTask.UserTaskData.Title</b></h6>
                             </div>
                             <div class="col" >
@@ -71,7 +71,7 @@
                 </div>
             }
             <div class="card" @onclick="ShowProgress" style="margin-top:8px">
-                <div class="card-header"><b>Completed: @ConpletedTasks/@TotalTasks</b></div>
+                <div class="card-header"><b>Completed: @CompletedTasks/@TotalTasks</b></div>
                 <div class="card-body" style="display:@ProgressDisplay">
                     <h6>Not started: @NotStartedTasks</h6>
                     <h6>In progress: @InProgressTasks</h6>
@@ -121,7 +121,7 @@
     private UserTask selectedTask = new UserTask();
     DateOnly taskDate;
     public string ProgressDisplay = "none";
-    public int ConpletedTasks = 0;
+    public int CompletedTasks = 0;
     public int NotStartedTasks = 0;
     public int InProgressTasks = 0;
     public int TotalTasks = 0;
@@ -155,6 +155,7 @@
     private List<UserTask> FilterTasks(List<UserTask> listUserTasks)
     {
         List<UserTask> filterUserTasks = listUserTasks.Where(task => task.AssignedDate == taskDate).ToList();
+        filterUserTasks = listUserTasks.Where(task => !task.IsDeleted).ToList();
         filterUserTasks = filterUserTasks.OrderBy(task => task.Priority).ToList();
 
         return filterUserTasks;
@@ -181,10 +182,15 @@
         AuxDeskServices _auxDeskServices = new AuxDeskServices();
 
         List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
+
+        if (listUserTasks == null || listUserTasks.Count == 0)
+        {
+            return;
+        }
         listDaysUserTasks = FilterTasks(listUserTasks);
 
         TotalTasks = listDaysUserTasks.Count;
-        ConpletedTasks = listDaysUserTasks.Count(task => task.EndDateTime != null && task.IsDone);
+        CompletedTasks = listDaysUserTasks.Count(task => task.EndDateTime != null && task.IsDone);
         NotStartedTasks = listDaysUserTasks.Count(task => task.StartDateTime == null);
         InProgressTasks = listDaysUserTasks.Count(task => task.StartDateTime != null && !task.IsDone);
     }
@@ -195,9 +201,36 @@
 
         List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
 
-        listUserTasks.RemoveAll(task => task.TaskGUID == taskGUID);
+        UserTask taskToDelete = listUserTasks.FirstOrDefault(task => task.TaskGUID == taskGUID);
+        taskToDelete.IsDeleted = true;
 
-        _auxDeskServices.Save(listUserTasks);
+        if (taskToDelete.IsDone)
+        {
+            CompletedTasks--;
+        }
+        if (taskToDelete.StartDateTime == null)
+        {
+            NotStartedTasks--;
+        } 
+        else
+        {
+            InProgressTasks--;
+        }
+        TotalTasks--;
+
+        if (selectedTask.TaskGUID == taskToDelete.TaskGUID)
+        {
+            selectedTask = new UserTask();
+        }
+
+        DeletedTask deletedTask = new DeletedTask {
+            TaskGUID = taskToDelete.TaskGUID,
+            TaskDeletedDate = DateOnly.FromDateTime(DateTime.UtcNow),
+        };
+
+        _auxDeskServices.DeleteTask(deletedTask);
+
+        _auxDeskServices.Save(listUserTasks, null, false);
 
         listDaysUserTasks = FilterTasks(listUserTasks);
     }
