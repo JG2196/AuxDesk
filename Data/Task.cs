@@ -15,11 +15,17 @@ namespace AuxDesk.Data
         public int Priority { get; set; } = 0;
         public bool IsDone { get; set; } = false;
         public TaskData UserTaskData { get; set; } = new TaskData();
+        public bool IsDeleted { get; set; } = false;
     }
     public class TaskData
     {
         public string TaskGUID { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
+    }
+    public class DeletedTask
+    {
+        public string TaskGUID { get; set; } = string.Empty;
+        public DateOnly? TaskDeletedDate { get; set; } = null;
     }
 }
