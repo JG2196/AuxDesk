@@ -12,8 +12,9 @@
 
 <div class="row gx-3">
     <div class="col">
-        <div class="p-2">
-            <h5><b>Unassigned Date</b></h5>
+
+        <h6><b>Unassigned Date</b></h6>
+        <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
             @foreach (UserTask userTask in listTasksNoDate)
             {
                 <div class="col">
@@ -56,11 +57,12 @@
                 </div>
                 </div>
             }
-        </div>
+            </div>
     </div>
         
     <div class="col">
-        <h5><b>Not Started</b></h5>
+        <h6><b>Not Started</b></h6>
+        <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
         @foreach (UserTask userTask in listTasksNotStarted)
         {
             <div class="col">
@@ -105,9 +107,11 @@
                 </div>
             </div>
         }
+        </div>
     </div>
     <div class="col">
-        <h5><b>In Progress</b></h5>
+        <h6><b>In Progress</b></h6>
+        <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
         @foreach (UserTask userTask in listTasksInProgress)
         {
             <div class="col">
@@ -152,9 +156,11 @@
                 </div>
             </div>
         }
+        </div>
     </div>
     <div class="col">
-        <h5><b>Done</b></h5>
+        <h6><b>Done</b></h6>
+        <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
         @foreach (UserTask userTask in listTasksDone)
         {
             <div class="col">
@@ -199,9 +205,11 @@
                 </div>
             </div>
         }
+        </div>
     </div>
     <div class="col">
-        <h5><b>Selected Task</b></h5>
+        <h6><b>Selected Task</b></h6>
+        <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
         <div class="p-2">
             <div class="input-group mb-3">
                 <input type="text" class="form-control" placeholder="Title..." @bind="@selectedTask.UserTaskData.Title" disabled>
@@ -225,6 +233,7 @@
             </div>
         </div>
         </div>
+    </div>
 </div>
 
 @code {
