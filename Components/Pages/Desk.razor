@@ -105,14 +105,6 @@
             </div>
         </div>
     </div>
-        
-    <div class="col">
-        <div class="p-2">Timer</div>
-    </div>
-        
-    <div class="col">
-        <div class="p-2">Analytics</div>
-    </div>
 </div>
 
 @code {
@@ -180,7 +172,6 @@
 
     private void Load()
     {
-        //AuxDeskServices _auxDeskServices = new AuxDeskServices();
 
         List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
 
@@ -198,7 +189,6 @@
 
     private void DeleteTask(string taskGUID)
     {
-        //AuxDeskServices _auxDeskServices = new AuxDeskServices();
 
         List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
 
