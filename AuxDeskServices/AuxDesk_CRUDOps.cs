@@ -18,7 +18,7 @@ namespace AuxDesk.AuxDeskServices
             listUserTasks = CRUDRemoveDeletedTasks(listUserTasks, expireDate);
             
             var expireDateTime = expireDate.ToDateTime(TimeOnly.MaxValue);
-            listUserTasks = listUserTasks.Where(task => task.IsDone && task.EndDateTime < expireDateTime).ToList();
+            listUserTasks = listUserTasks.Where(task => !task.IsDone || task.EndDateTime != null && task.EndDateTime >= expireDateTime).ToList();
 
             Save(listUserTasks, null, false);
         }
