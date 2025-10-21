@@ -12,7 +12,7 @@
 
 <div class="row gx-3">
     <div class="col">
-
+        <div class="p-2">
         <h6><b>Unassigned Date</b></h6>
         <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
             @foreach (UserTask userTask in listTasksNoDate)
@@ -58,9 +58,11 @@
                 </div>
             }
             </div>
+            </div>
     </div>
         
     <div class="col">
+        <div class="p-2">
         <h6><b>Not Started</b></h6>
         <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
         @foreach (UserTask userTask in listTasksNotStarted)
@@ -108,8 +110,10 @@
             </div>
         }
         </div>
+        </div>
     </div>
     <div class="col">
+        <div class="p-2">
         <h6><b>In Progress</b></h6>
         <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
         @foreach (UserTask userTask in listTasksInProgress)
@@ -156,9 +160,11 @@
                 </div>
             </div>
         }
+                </div>
         </div>
     </div>
     <div class="col">
+        <div class="p-2">
         <h6><b>Done</b></h6>
         <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
         @foreach (UserTask userTask in listTasksDone)
@@ -206,8 +212,10 @@
             </div>
         }
         </div>
+        </div>
     </div>
     <div class="col">
+        <div class="p-2">
         <h6><b>Selected Task</b></h6>
         <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
         <div class="p-2">
@@ -232,6 +240,7 @@
                 <textarea class="form-control" aria-label="With textarea" @bind="@selectedTask.UserTaskData.Notes" placeholder="Notes"></textarea>
             </div>
         </div>
+                </div>
         </div>
     </div>
 </div>
