@@ -294,7 +294,7 @@
 
         listTasksNoDate = listUserTasks.Where(userTask => userTask.AssignedDate == null && !userTask.IsDeleted).OrderBy(userTask => userTask.Priority).ToList();
         listTasksNotStarted = listUserTasks.Where(userTask => userTask.StartDateTime == null && !userTask.IsDeleted).OrderBy(userTask => userTask.AssignedDate).ToList();
-        listTasksInProgress = listUserTasks.Where(userTask => userTask.StartDateTime != null && !userTask.IsDeleted).OrderBy(userTask => userTask.AssignedDate).ToList();
+        listTasksInProgress = listUserTasks.Where(userTask => userTask.StartDateTime != null && !userTask.IsDone && !userTask.IsDeleted).OrderBy(userTask => userTask.AssignedDate).ToList();
         listTasksDone = listUserTasks.Where(userTask => userTask.IsDone == true && !userTask.IsDeleted).OrderBy(userTask => userTask.AssignedDate).ToList();
     }
 
