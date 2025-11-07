@@ -36,10 +36,10 @@ namespace AuxDesk.Services
                 return listTaskItems;
             }
         }
-        public async Task<TaskItem> GetTaskItemAsync(string guid)
+        public TaskItem GetTaskItem(List<TaskItem> listTaskItems, string guid)
         {
-            TaskItem listTaskItems = await _taskRepository.GetByIdAsync(guid);
-            return listTaskItems;
+            TaskItem taskItem = listTaskItems.FirstOrDefault(t => t.TaskGUID == guid);
+            return taskItem;
 
         }
         //    public async Task DeleteTaskItemAsync() 
