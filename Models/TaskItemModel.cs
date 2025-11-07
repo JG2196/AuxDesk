@@ -21,9 +21,15 @@ namespace AuxDesk.Models
         public string Title { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
         public bool IsDeleted { get; set; } = false;
+    
+        public void Delete()
+        {
+            IsDeleted = true;
+        }
     }
     public class DeletedTaskItem : TaskItemData
     {
         public DateOnly? DateDeleted { get; set; }
     }
+
 }
