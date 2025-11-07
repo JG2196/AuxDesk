@@ -4,7 +4,12 @@
 @using System.IO
 @using System.Text.Json
 
+@using Models;
+@using Services;
+
 @inject NavigationManager _navigationManager
+
+@inject ITaskService _taskService
 
 @page "/"
 
@@ -21,14 +26,14 @@
                 </div>
                 <button type="button" class="btn btn-primary" style="width:100%" @onclick="DirectToNewTask" ><b>+</b></button>
             <div class="row row-cols-2">
-            @foreach (UserTask userTask in listDaysUserTasks)
+            @foreach (TaskItem userTask in listTaskItems)
             {
                 <div class="col">
                     <div class="card" style="margin-top:8px">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col" @onclick="() => SelectTask(userTask.TaskGUID)">
-                                    <h6 class="card-title"><b>@userTask.UserTaskData.Title</b></h6>
+                                    <h6 class="card-title"><b>@userTask.Title</b></h6>
                                 </div>
                                 <div class="col" >
                                         @if (userTask.Priority == 1) {
@@ -153,6 +158,11 @@
     private bool isDropdownOpenStatus = false;
     private string selectedStatus = "Not started";
 
+    //
+    List<TaskItem> listTaskItems = new ();
+    //
+
+
     protected override void OnInitialized()
     {
         taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -252,21 +262,39 @@
 
     }
 
-    private void Load()
+    // private void Load()
+    // {
+
+    //     List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
+
+    //     if (listUserTasks == null || listUserTasks.Count == 0)
+    //     {
+    //         return;
+    //     }
+    //     listDaysUserTasks = FilterTasks(listUserTasks);
+
+    //     TotalTasks = listDaysUserTasks.Count;
+    //     CompletedTasks = listDaysUserTasks.Count(task => task.EndDateTime != null && task.IsDone);
+    //     NotStartedTasks = listDaysUserTasks.Count(task => task.StartDateTime == null);
+    //     InProgressTasks = listDaysUserTasks.Count(task => task.StartDateTime != null && !task.IsDone);
+    // }
+
+    private async void Load()
     {
+        listTaskItems = await _taskService.GetTaskItemsAsync(taskDate);
 
-        List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
+        //List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
 
-        if (listUserTasks == null || listUserTasks.Count == 0)
+        if (listTaskItems == null || listTaskItems.Count == 0)
         {
             return;
         }
-        listDaysUserTasks = FilterTasks(listUserTasks);
+        // listDaysUserTasks = FilterTasks(listUserTasks);
 
-        TotalTasks = listDaysUserTasks.Count;
-        CompletedTasks = listDaysUserTasks.Count(task => task.EndDateTime != null && task.IsDone);
-        NotStartedTasks = listDaysUserTasks.Count(task => task.StartDateTime == null);
-        InProgressTasks = listDaysUserTasks.Count(task => task.StartDateTime != null && !task.IsDone);
+        // TotalTasks = listDaysUserTasks.Count;
+        // CompletedTasks = listDaysUserTasks.Count(task => task.EndDateTime != null && task.IsDone);
+        // NotStartedTasks = listDaysUserTasks.Count(task => task.StartDateTime == null);
+        // InProgressTasks = listDaysUserTasks.Count(task => task.StartDateTime != null && !task.IsDone);
     }
 
     private void DeleteTask(string taskGUID)

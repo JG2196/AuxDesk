@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 
+using AuxDesk.Services;
+using AuxDesk.Data;
+
 namespace AuxDesk
 {
     public static class MauiProgram
@@ -21,7 +24,14 @@ namespace AuxDesk
     		builder.Logging.AddDebug();
 #endif
 
+            ConfigureServices(builder.Services);
             return builder.Build();
+        }
+
+        private static void ConfigureServices(IServiceCollection services)
+        {
+            services.AddSingleton<ITaskRepository, JSONTaskRepository>();
+            services.AddSingleton<ITaskService, TaskService>();
         }
     }
 }
