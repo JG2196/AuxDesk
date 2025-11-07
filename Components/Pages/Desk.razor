@@ -24,7 +24,7 @@
                     <span class="input-group-text" id="inputGroup-sizing-default">Date</span>
                     <input type="date" class="form-control" aria-label="Sizing example input" @onchange="SelectDate" value="@taskDate.ToString("yyyy-MM-dd")" aria-describedby="inputGroup-sizing-default">
                 </div>
-                <button type="button" class="btn btn-primary" style="width:100%" @onclick="DirectToNewTask" ><b>+</b></button>
+                <button type="button" class="btn btn-primary" style="width:100%" @onclick="DirectToNewTask"><b>+</b></button>
             <div class="row row-cols-2">
             @foreach (TaskItem userTask in listTaskItems)
             {
@@ -326,9 +326,9 @@
         }
     }
 
-    private void SelectTaskItem(string taskGUID)
+    private async void SelectTaskItem(string taskGUID)
     {
-        selectedTaskItem = _taskService.GetTaskItem(listTaskItems, taskGUID);
+        selectedTaskItem = await _taskService.GetTaskItem(listTaskItems, taskGUID);
 
         if (selectedTaskItem.Priority == 1) { selectedPriority = "High"; }
         else if (selectedTaskItem.Priority == 2) { selectedPriority = "Medium"; }

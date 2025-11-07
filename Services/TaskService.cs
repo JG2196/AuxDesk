@@ -12,10 +12,12 @@ namespace AuxDesk.Services
     public class TaskService : ITaskService
     {
         private readonly ITaskRepository _taskRepository;
+        private readonly IRecycleRepository _recycleRepository;
 
-        public TaskService(ITaskRepository taskRepository)
+        public TaskService(ITaskRepository taskRepository, IRecycleRepository recycleRepository)
         {
             _taskRepository = taskRepository;
+            _recycleRepository = recycleRepository;
         }
 
         public async Task<List<TaskItem>> GetTaskItemsAsync(DateOnly? selectedDate)
@@ -36,7 +38,7 @@ namespace AuxDesk.Services
                 return listTaskItems;
             }
         }
-        public TaskItem GetTaskItem(List<TaskItem> listTaskItems, string guid)
+        public async Task<TaskItem> GetTaskItem(List<TaskItem> listTaskItems, string guid)
         {
             TaskItem taskItem = listTaskItems.FirstOrDefault(t => t.TaskGUID == guid);
             return taskItem;

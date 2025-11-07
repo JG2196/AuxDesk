@@ -8,9 +8,9 @@ namespace AuxDesk.Data
 {
     using AuxDesk.Models;
 
-    public interface ITaskRepository
+    public interface IRecycleRepository
     {
-        Task<List<TaskItem>> GetAllAsync();
-        Task SaveAsync(List<TaskItem> listTaskItems);
+        Task<List<DeletedTaskItem>> GetAllAsync();
+        Task SaveAsync(List<DeletedTaskItem> listTaskItems);
     }
 }

@@ -11,7 +11,7 @@ namespace AuxDesk.Services
     public interface ITaskService
     {
         Task<List<TaskItem>> GetTaskItemsAsync(DateOnly? selectedDate);
-        TaskItem GetTaskItem(List<TaskItem> listTaksItems, string guid);
+        Task<TaskItem> GetTaskItem(List<TaskItem> listTaksItems, string guid);
         //Task DeleteTaskItemAsync();
         //Task CreateTaskItemAsync();
         //Task<List<TaskItem>> FilterTask();

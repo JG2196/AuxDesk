@@ -31,6 +31,7 @@ namespace AuxDesk
         private static void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ITaskRepository, JSONTaskRepository>();
+            services.AddSingleton<IRecycleRepository, JSONRecycleRepository>();
             services.AddSingleton<ITaskService, TaskService>();
         }
     }

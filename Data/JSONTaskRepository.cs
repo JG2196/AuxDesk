@@ -15,7 +15,7 @@ namespace AuxDesk.Data
     public class JSONTaskRepository : ITaskRepository
     {
         private readonly string taskPath = Path.Combine(FileSystem.AppDataDirectory, "userTasks.json");
-        //private readonly string deletedTaskPath = Path.Combine(FileSystem.AppDataDirectory, "recycleTask.json");
+        
 
         public async Task<List<TaskItem>> GetAllAsync() 
         {
@@ -31,39 +31,10 @@ namespace AuxDesk.Data
 
             return listTaskItems;
         }
-        public async Task<TaskItem> GetByIdAsync(string guid) 
-        {
-            List<TaskItem> listTaskItems = await GetAllAsync();
-            TaskItem taskItem = listTaskItems.FirstOrDefault(t => t.TaskGUID == guid);
-
-            return taskItem;
-        }
-        public async Task AddAsync(TaskItem taskItem)
-        {
-            List<TaskItem> listTaskItems = await GetAllAsync();
-            listTaskItems.Add(taskItem);
-            await SaveAsync(listTaskItems);
-        }
         public async Task SaveAsync (List<TaskItem> listTaskItems)
         {
             var contents = JsonSerializer.Serialize(listTaskItems);
             File.WriteAllText(taskPath, contents);
-        }
-        public async Task UpdateAsync(TaskItem taskItem) 
-        {
-            List<TaskItem> listTaskItems = await GetAllAsync();
-            TaskItem itemToUpdate = listTaskItems.FirstOrDefault(t => t.TaskGUID == taskItem.TaskGUID);
-
-            if (itemToUpdate != null)
-            { 
-                itemToUpdate = taskItem; 
-            }
-
-            await SaveAsync(listTaskItems);
-        }
-        public async Task DeleteAsync(string guid) 
-        {
-        
         }
     }
 }
