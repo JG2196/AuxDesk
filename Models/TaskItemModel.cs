@@ -26,6 +26,32 @@ namespace AuxDesk.Models
         {
             IsDeleted = true;
         }
+        public bool NotStarted()
+        {
+            bool notStarted = true;
+
+            if (StartDateTime != null)
+            {
+                notStarted = false;
+            }
+
+            return notStarted;
+        }
+        public bool InProgress()
+        {
+            bool inProgress = false;
+
+            if (EndDateTime == null && StartDateTime != null)
+            {
+                inProgress = true;
+            }
+
+            return inProgress;
+        }
+        public bool IsCompleted()
+        {
+            return IsDone;
+        }
     }
     public class DeletedTaskItem : TaskItemData
     {

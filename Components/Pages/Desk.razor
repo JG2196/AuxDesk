@@ -145,10 +145,6 @@
     DateOnly todayDate = DateOnly.FromDateTime(DateTime.UtcNow);
     DateOnly taskDate;
     public string ProgressDisplay = "none";
-    public int CompletedTasks = 0;
-    public int NotStartedTasks = 0;
-    public int InProgressTasks = 0;
-    public int TotalTasks = 0;
     public bool BProgressExpanded = false;
 
     private bool isDropdownOpenPriorty = false;
@@ -162,7 +158,10 @@
     private List<TaskItem> listTaskItems = new ();
     private List<DeletedTaskItem> listDeletedTaskItems = new();
     private TaskItem selectedTaskItem = new ();
-
+    private int CompletedTasks;
+    private int NotStartedTasks;
+    private int InProgressTasks;
+    private int TotalTasks;
     //
 
 
@@ -170,6 +169,7 @@
     {
         taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
         LoadTaskItems();
+        TaskMetaData();
         //_auxDeskServices.CRUDPermenentDelete();
     }
 
@@ -185,6 +185,7 @@
         DateOnly.TryParse(e.Value.ToString(), out newDate);
         taskDate = newDate;
         LoadTaskItems();
+        TaskMetaData();
     }
 
     private List<UserTask> FilterTasks(List<UserTask> listUserTasks)
@@ -214,6 +215,30 @@
     private void ToggleDropdownStatus()
     {
         isDropdownOpenStatus = !isDropdownOpenStatus;
+    }
+
+    private void TaskMetaData()
+    {
+        NotStartedTasks = 0;
+        InProgressTasks = 0;
+        CompletedTasks = 0;
+
+        foreach (TaskItem taskItem in listTaskItems)
+        {
+            if (taskItem.NotStarted())
+            {
+                NotStartedTasks++;
+            }
+            else if (taskItem.InProgress())
+            {
+                InProgressTasks++;
+            }
+            else if (taskItem.IsCompleted())
+            {
+                CompletedTasks++;
+            }
+        }
+        TotalTasks = listTaskItems.Count();
     }
 
     private void SelectStatus(int status)
