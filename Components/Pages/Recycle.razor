@@ -8,7 +8,8 @@
 <div class="row gx-3">
     <div class="col-sm-6">
         <div class="p-2">
-            <h5><b>Deleted Tasks</b></h5>
+            <h6><b>Deleted Tasks</b></h6>
+            <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
             <div class="row row-cols-2">
             @foreach (UserTask userTask in listUsersDeletedTasks)
             {
@@ -49,11 +50,13 @@
                
             }
              </div>
+             </div>
         </div>
     </div>
     <div class="col-sm-6">
         <div class="p-2">
-            <h5><b>Selected Task</b></h5>
+            <h6><b>Selected Task</b></h6>
+            <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
             <div class="input-group mb-3">
                 <input type="text" class="form-control" placeholder="Title..." value="@selectedTask.UserTaskData.Title" disabled>
                 <div class="dropdown">
@@ -66,6 +69,7 @@
             </div>
             <div class="input-group" style="height:60vh">
                 <textarea class="form-control" aria-label="With textarea" placeholder="Notes" disabled>@selectedTask.UserTaskData.Notes</textarea>
+            </div>
             </div>
         </div>
     </div>
