@@ -14,7 +14,7 @@ namespace AuxDesk.Models
     }
     public class TaskItem : TaskItemData
     {
-        public DateOnly AssignedDate { get; set; }
+        public DateOnly? AssignedDate { get; set; }
         public DateTime? StartDateTime { get; set; }
         public DateTime? EndDateTime { get; set; }
         public bool IsDone { get; set; } = false;
@@ -51,6 +51,21 @@ namespace AuxDesk.Models
         public bool IsCompleted()
         {
             return IsDone;
+        }
+        public bool ValidateTitle()
+        {
+            return string.IsNullOrWhiteSpace(Title);
+        }
+        public bool ValidateAssignedDate()
+        {
+            bool isValid = true;
+
+            if (AssignedDate is null || AssignedDate < DateOnly.FromDateTime(DateTime.UtcNow))
+            {
+                isValid = false;
+            }
+
+            return isValid;
         }
     }
     public class DeletedTaskItem : TaskItemData

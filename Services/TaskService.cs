@@ -65,10 +65,11 @@ namespace AuxDesk.Services
         {
             await _taskRepository.SaveAsync(listTaskItems);
         }
-        //    public async Task CreateTaskItemAsync() 
-        //    {
-
-        //    }
+        public async Task SaveTaskItemAsync(List<TaskItem> listTaskItems, TaskItem taskItem)
+        {
+            listTaskItems.Add(taskItem);
+            await _taskRepository.SaveAsync(listTaskItems);
+        }
         //    public Task<List<TaskItem>> FilterTask() 
         //    {
 

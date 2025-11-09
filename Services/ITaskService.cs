@@ -11,11 +11,11 @@ namespace AuxDesk.Services
     public interface ITaskService
     {
         Task<List<TaskItem>> GetTaskItemsAsync(DateOnly? selectedDate);
-        Task<TaskItem> GetTaskItemAsync(List<TaskItem> listTaksItems, string guid);
+        Task<TaskItem> GetTaskItemAsync(List<TaskItem> listTaskItems, string guid);
         Task DeleteTaskItemAsync(List<DeletedTaskItem> listDeletedTaskItems, TaskItem taskItemToDelete);
         Task<List<DeletedTaskItem>> GetDeletedTaskItemsAsync();
         Task UpdateTaskItemsAsync(List<TaskItem> listTaskItems);
-        //Task CreateTaskItemAsync();
+        Task SaveTaskItemAsync(List<TaskItem> listTaskItems, TaskItem taskItem);
         //Task<List<TaskItem>> FilterTask();
     }
 }

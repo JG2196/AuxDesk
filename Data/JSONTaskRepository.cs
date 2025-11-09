@@ -15,7 +15,6 @@ namespace AuxDesk.Data
     public class JSONTaskRepository : ITaskRepository
     {
         private readonly string taskPath = Path.Combine(FileSystem.AppDataDirectory, "userTasks.json");
-        
 
         public async Task<List<TaskItem>> GetAllAsync() 
         {
