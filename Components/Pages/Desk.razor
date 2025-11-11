@@ -300,7 +300,7 @@
     private async void DeleteTaskItem(string taskGUID)
     {
         TaskItem itemToDelete = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
-        itemToDelete.Delete();
+        itemToDelete.Delete(true);
 
         if (listDeletedTaskItems.Count == 0)
         {

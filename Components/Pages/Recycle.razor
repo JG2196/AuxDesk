@@ -44,7 +44,7 @@
                                 <div class="col">
                                     <div class="btn-toolbar" role="toolbar">
                                         <div class="btn-group" style="padding-left:8px">
-                                                    <button type="button" class="btn btn-danger" @onclick="() => RestoreTask(taskItem.TaskGUID)">Restore</button>
+                                                    <button type="button" class="btn btn-danger" @onclick="() => RestoreTaskItem(taskItem.TaskGUID)">Restore</button>
                                         </div>
                                     </div>
                                 </div>
@@ -81,11 +81,9 @@
 </div>
 
 @code {
-    private List<UserTask> listUsersDeletedTasks = new List<UserTask>();
-    private UserTask selectedTask = new UserTask();
-
     DateOnly todayDate = DateOnly.FromDateTime(DateTime.UtcNow);
     private List<DeletedTaskItem> listDeletedTaskItems = new();
+    private List<TaskItem> listAllTaskItems = new();
     private List<TaskItem> listTaskItems = new();
     private TaskItem selectedTaskItem = new();
 
@@ -96,26 +94,6 @@
     protected override void OnInitialized()
     {
         LoadRecycledTasks();
-
-        // AuxDeskServices _auxDeskServices = new AuxDeskServices();
-
-        // List<DeletedTask> listDeletedTasks = _auxDeskServices.GetDeletedTasks();
-
-        // if (listDeletedTasks.Count == 0)
-        // {
-        //     return;
-        // }
-
-        // List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
-
-        // foreach (DeletedTask deletedTask in listDeletedTasks)
-        // {
-        //     UserTask selectedTask = listUserTasks.FirstOrDefault(userTask => userTask.TaskGUID == deletedTask.TaskGUID);
-        //     if (selectedTask != null)
-        //     {
-        //         listUsersDeletedTasks.Add(selectedTask);
-        //     }
-        // }
     }
     private async void LoadRecycledTasks()
     {
@@ -128,7 +106,7 @@
         }
 
         // Get all tasks
-        List<TaskItem> listAllTaskItems = await _taskService.GetTaskItemsAsync(null);
+        listAllTaskItems = await _taskService.GetTaskItemsAsync(null);
 
         // Add to list of tasks to show
         foreach (DeletedTaskItem deletedTask in listDeletedTaskItems)
@@ -148,25 +126,22 @@
         else if (selectedTaskItem.Priority == 2) { selectedPriority = "Medium"; }
         else { selectedPriority = "Low"; }
     }
-    private void RestoreTask(string taskGUID)
+    private async void RestoreTaskItem(string taskGUID)
     {
-        // // Get all tasks
-        // List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
+        // select task item in list of all task items
+        TaskItem taskToRestore = listAllTaskItems.FirstOrDefault(t => t.TaskGUID == taskGUID);
 
-        // // Find task by TaskGUID
-        // UserTask selectedTask = listUserTasks.FirstOrDefault(userTask => userTask.TaskGUID == taskGUID);
+        // switch isDeleted to false
+        taskToRestore.Delete(false);
 
-        // // Set isDeleted to false
-        // selectedTask.IsDeleted = false;
+        // Update tasks in data store
+        await _taskService.UpdateTaskItemsAsync(listAllTaskItems);
 
-        // List<DeletedTask> listDeletedTasks = _auxDeskServices.GetDeletedTasks();
-        // listDeletedTasks.RemoveAll(deletedTask => deletedTask.TaskGUID == taskGUID);
+        // remove from list of deleted tasks
+        listDeletedTaskItems.RemoveAll(t => t.TaskGUID == taskGUID);
+        listTaskItems.RemoveAll(t => t.TaskGUID == taskGUID);
 
-        // listUsersDeletedTasks.RemoveAll(deletedTask => deletedTask.TaskGUID == taskGUID);
-        // // Save all tasks
-        // _auxDeskServices.Save(listUserTasks, null, false);
-        // _auxDeskServices.Save(null, listDeletedTasks, true);
-
-        // //StateHasChanged();
+        // Update recycled tasks in data store
+        await _taskService.UpdateDeletedTaskItemsAsync(listDeletedTaskItems);
     }
 }

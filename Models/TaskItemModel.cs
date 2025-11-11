@@ -22,9 +22,9 @@ namespace AuxDesk.Models
         public string Notes { get; set; } = string.Empty;
         public bool IsDeleted { get; set; } = false;
     
-        public void Delete()
+        public void Delete(bool bDelete)
         {
-            IsDeleted = true;
+            IsDeleted = bDelete;
         }
         public bool NotStarted()
         {
