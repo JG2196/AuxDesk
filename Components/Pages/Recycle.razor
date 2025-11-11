@@ -23,7 +23,7 @@
                     <div class="card" style="margin-top:8px">
                         <div class="card-body">
                             <div class="row">
-                                        <div class="col" @onclick="() => SelectTask(taskItem.TaskGUID)">
+                                        <div class="col" @onclick="() => SelectTaskItem(taskItem.TaskGUID)">
                                             <h6 class="card-title"><b>@taskItem.Title</b></h6>
                                 </div>
                                 <div class="col" >
@@ -63,17 +63,17 @@
             <h6><b>Selected Task</b></h6>
             <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
             <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="Title..." value="@selectedTask.UserTaskData.Title" disabled>
+                    <input type="text" class="form-control" placeholder="Title..." value="@selectedTaskItem.Title" disabled>
                 <div class="dropdown">
                     <button class="btn btn-outline-secondary dropdown-toggle" type="button" disabled>@selectedPriority</button>
                 </div>
             </div>
             <div class="input-group mb-3  text-center">
                 <span class="input-group-text" id="inputGroup-sizing-default" disabled>Date</span>
-                <input type="date" class="form-control" aria-label="Sizing example input" @bind="@selectedTaskItem.AssignedDate" aria-describedby="inputGroup-sizing-default" disabled>
+                    <input type="date" class="form-control" aria-label="Sizing example input" @bind="@selectedTaskItem.AssignedDate" aria-describedby="inputGroup-sizing-default" disabled>
             </div>
             <div class="input-group" style="height:60vh">
-                <textarea class="form-control" aria-label="With textarea" placeholder="Notes" disabled>@selectedTask.UserTaskData.Notes</textarea>
+                    <textarea class="form-control" aria-label="With textarea" placeholder="Notes" disabled>@selectedTaskItem.Notes</textarea>
             </div>
             </div>
         </div>
@@ -140,6 +140,14 @@
             }
         }
     }
+    private async void SelectTaskItem(string taskGUID)
+    {
+        selectedTaskItem = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
+
+        if (selectedTaskItem.Priority == 1) { selectedPriority = "High"; }
+        else if (selectedTaskItem.Priority == 2) { selectedPriority = "Medium"; }
+        else { selectedPriority = "Low"; }
+    }
     private void RestoreTask(string taskGUID)
     {
         // // Get all tasks
@@ -160,9 +168,5 @@
         // _auxDeskServices.Save(null, listDeletedTasks, true);
 
         // //StateHasChanged();
-    }
-    private void SelectTask(string taskGUID)
-    {
-        selectedTask = listUsersDeletedTasks.FirstOrDefault(task => task.TaskGUID == taskGUID);
     }
 }
