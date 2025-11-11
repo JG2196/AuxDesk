@@ -26,6 +26,10 @@ namespace AuxDesk.Models
         {
             IsDeleted = bDelete;
         }
+        public bool TaskDeleted()
+        {
+            return IsDeleted;
+        }
         public bool NotStarted()
         {
             bool notStarted = true;

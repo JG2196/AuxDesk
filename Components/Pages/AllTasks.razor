@@ -243,6 +243,10 @@
 
         foreach (TaskItem taskItem in listTaskItems)
         {
+            if (taskItem.TaskDeleted())
+            {
+                continue;
+            }
             if (taskItem.NotStarted())
             {
                 // Add to not started
