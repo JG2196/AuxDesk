@@ -184,15 +184,6 @@
         TaskMetaData();
     }
 
-    private List<UserTask> FilterTasks(List<UserTask> listUserTasks)
-    {
-        List<UserTask> filterUserTasks = listUserTasks.Where(task => task.AssignedDate == taskDate).ToList();
-        filterUserTasks = filterUserTasks.Where(task => !task.IsDeleted).ToList();
-        filterUserTasks = filterUserTasks.OrderBy(task => task.Priority).ToList();
-
-        return filterUserTasks;
-    }
-
     private void ToggleDropdownPriority()
     {
         isDropdownOpenPriorty = !isDropdownOpenPriorty;
