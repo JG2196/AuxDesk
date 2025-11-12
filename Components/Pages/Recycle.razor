@@ -132,7 +132,7 @@
         TaskItem taskToRestore = listAllTaskItems.FirstOrDefault(t => t.TaskGUID == taskGUID);
 
         // switch isDeleted to false
-        taskToRestore.Delete(false);
+        taskToRestore.IsDeleted = false;
 
         // Update tasks in data store
         await _taskService.UpdateTaskItemsAsync(listAllTaskItems);

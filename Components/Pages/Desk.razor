@@ -151,7 +151,8 @@
     private string selectedStatus = "Not started";
 
     //
-    private List<TaskItem> listTaskItems = new ();
+    private List<TaskItem> listAllTaskItems = new();
+    private List<TaskItem> listTaskItems = new();
     private List<DeletedTaskItem> listDeletedTaskItems = new();
     private TaskItem selectedTaskItem = new ();
     private int CompletedTasks;
@@ -220,7 +221,7 @@
             {
                 InProgressTasks++;
             }
-            else if (taskItem.IsCompleted())
+            else if (taskItem.IsDone)
             {
                 CompletedTasks++;
             }
@@ -290,8 +291,13 @@
 
     private async void DeleteTaskItem(string taskGUID)
     {
-        TaskItem itemToDelete = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
-        itemToDelete.Delete(true);
+        if (listAllTaskItems.Count() == 0)
+        {
+            listAllTaskItems = await _taskService.GetTaskItemsAsync(null);
+        }
+
+        TaskItem itemToDelete = await _taskService.GetTaskItemAsync(listAllTaskItems, taskGUID);
+        itemToDelete.IsDeleted = true;
 
         if (listDeletedTaskItems.Count == 0)
         {
@@ -299,9 +305,10 @@
         }
 
         await _taskService.DeleteTaskItemAsync(listDeletedTaskItems, itemToDelete);
-        await _taskService.UpdateTaskItemsAsync(listTaskItems);
+        await _taskService.UpdateTaskItemsAsync(listAllTaskItems);
 
         LoadTaskItems();
+        TaskMetaData();
     }
 
     private void ShowProgress()

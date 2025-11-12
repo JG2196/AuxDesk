@@ -9,26 +9,57 @@ namespace AuxDesk.Models
 {
     public class TaskItemData
     {
-        public string TaskGUID { get; set; } = string.Empty;
+        public string TaskGUID { get; set; }
         public int Priority { get; set; }
     }
     public class TaskItem : TaskItemData
     {
-        public DateOnly? AssignedDate { get; set; }
-        public DateTime? StartDateTime { get; set; }
-        public DateTime? EndDateTime { get; set; }
+        //
+        private DateOnly? assignedDate;
+        private string? title;
+        public DateTime? EndDateTime { get; private set; } = null;
+        public DateTime? StartDateTime { get; private set; } = null;
         public bool IsDone { get; set; } = false;
-        public string Title { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
         public bool IsDeleted { get; set; } = false;
-    
-        public void Delete(bool bDelete)
+        public DateOnly? AssignedDate
         {
-            IsDeleted = bDelete;
+            get { return assignedDate; }
+            set
+            {
+                if (value < DateOnly.FromDateTime(DateTime.UtcNow))
+                {
+                    assignedDate = null;
+                }
+                else
+                {
+                    assignedDate = value;
+                }
+            }
         }
-        public bool TaskDeleted()
+        public string? Title
         {
-            return IsDeleted;
+            get { return title; }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    title = null;
+                }
+                title = value;
+            }
+        }
+        public void SetEndDateTime(DateTime date)
+        {
+            if (date < DateTime.UtcNow)
+            {
+                EndDateTime = null;
+            }
+            EndDateTime = date;
+        }
+        public void SetStartDateTime()
+        {
+            StartDateTime = DateTime.UtcNow;
         }
         public bool NotStarted()
         {
@@ -52,29 +83,14 @@ namespace AuxDesk.Models
 
             return inProgress;
         }
-        public bool IsCompleted()
-        {
-            return IsDone;
-        }
-        public bool ValidateTitle()
-        {
-            return string.IsNullOrWhiteSpace(Title);
-        }
-        public bool ValidateAssignedDate()
-        {
-            bool isValid = true;
-
-            if (AssignedDate is null || AssignedDate < DateOnly.FromDateTime(DateTime.UtcNow))
-            {
-                isValid = false;
-            }
-
-            return isValid;
-        }
     }
     public class DeletedTaskItem : TaskItemData
     {
-        public DateOnly? DateDeleted { get; set; }
+        public DateOnly? DateDeleted { get; private set; }
+        public void SetDateDeleted()
+        {
+            DateDeleted = DateOnly.FromDateTime(DateTime.UtcNow);
+        }
     }
 
 }
