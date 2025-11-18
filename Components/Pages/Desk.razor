@@ -4,7 +4,12 @@
 @using System.IO
 @using System.Text.Json
 
+@using Models;
+@using Services;
+
 @inject NavigationManager _navigationManager
+
+@inject ITaskService _taskService
 
 @page "/"
 
@@ -19,16 +24,16 @@
                     <span class="input-group-text" id="inputGroup-sizing-default">Date</span>
                     <input type="date" class="form-control" aria-label="Sizing example input" @onchange="SelectDate" value="@taskDate.ToString("yyyy-MM-dd")" aria-describedby="inputGroup-sizing-default">
                 </div>
-                <button type="button" class="btn btn-primary" style="width:100%" @onclick="DirectToNewTask" ><b>+</b></button>
+                <button type="button" class="btn btn-primary" style="width:100%" @onclick="DirectToNewTask"><b>+</b></button>
             <div class="row row-cols-2">
-            @foreach (UserTask userTask in listDaysUserTasks)
+            @foreach (TaskItem userTask in listTaskItems)
             {
                 <div class="col">
                     <div class="card" style="margin-top:8px">
                         <div class="card-body">
                             <div class="row">
-                                <div class="col" @onclick="() => SelectTask(userTask.TaskGUID)">
-                                    <h6 class="card-title"><b>@userTask.UserTaskData.Title</b></h6>
+                                <div class="col" @onclick="() => SelectTaskItem(userTask.TaskGUID)">
+                                    <h6 class="card-title"><b>@userTask.Title</b></h6>
                                 </div>
                                 <div class="col" >
                                         @if (userTask.Priority == 1) {
@@ -61,7 +66,7 @@
                                 <div class="col">
                                     <div class="btn-toolbar" role="toolbar">
                                         <div class="btn-group" style="padding-left:8px">
-                                            <button type="button" class="btn btn-danger" @onclick="() => DeleteTask(userTask.TaskGUID)">Delete</button>
+                                                    <button type="button" class="btn btn-danger" @onclick="() => DeleteTaskItem(userTask.TaskGUID)">Delete</button>
                                         </div>
                                     </div>
                                 </div>
@@ -87,7 +92,7 @@
             <h6><b>Current Task</b></h6>
             <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
                 <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="Title..." @bind="@selectedTask.UserTaskData.Title" disabled>
+                    <input type="text" class="form-control" placeholder="Title..." @bind="@selectedTaskItem.Title" disabled>
                     <div class="dropdown">
                         <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownPriority" type="button" disabled>
                             @selectedPriority
@@ -102,9 +107,9 @@
             <div class="row">
                 <div class="input-group mb-3 text-center col">
                     <span class="input-group-text" id="inputGroup-sizing-default">Date</span>
-                        @if (selectedTask.TaskGUID != "")
+                        @if (selectedTaskItem.TaskGUID != "")
                         {
-                            <input type="date" class="form-control" aria-label="Sizing example input" @bind="@selectedTask.AssignedDate" aria-describedby="inputGroup-sizing-default" disabled>
+                            <input type="date" class="form-control" aria-label="Sizing example input" @bind="@selectedTaskItem.AssignedDate" aria-describedby="inputGroup-sizing-default" disabled>
                         } else
                         {
                             <input type="date" class="form-control" aria-label="Sizing example input" value="@todayDate.ToString("yyyy-MM-dd")" aria-describedby="inputGroup-sizing-default" disabled>
@@ -124,7 +129,7 @@
                     </div>
                 </div>
                 <div class="input-group" style="height:60vh">
-                    <textarea class="form-control" aria-label="With textarea" @bind="@selectedTask.UserTaskData.Notes" placeholder="Notes" disabled></textarea>
+                    <textarea class="form-control" aria-label="With textarea" @bind="@selectedTaskItem.Notes" placeholder="Notes" disabled></textarea>
                 </div>
             </div>
         </div>
@@ -133,17 +138,9 @@
 </div>
 
 @code {
-
-    AuxDeskServices _auxDeskServices = new AuxDeskServices();
-    private List<UserTask> listDaysUserTasks = new List<UserTask>();
-    private UserTask selectedTask = new UserTask();
     DateOnly todayDate = DateOnly.FromDateTime(DateTime.UtcNow);
     DateOnly taskDate;
     public string ProgressDisplay = "none";
-    public int CompletedTasks = 0;
-    public int NotStartedTasks = 0;
-    public int InProgressTasks = 0;
-    public int TotalTasks = 0;
     public bool BProgressExpanded = false;
 
     private bool isDropdownOpenPriorty = false;
@@ -153,11 +150,24 @@
     private bool isDropdownOpenStatus = false;
     private string selectedStatus = "Not started";
 
+    //
+    private List<TaskItem> listAllTaskItems = new();
+    private List<TaskItem> listTaskItems = new();
+    private List<DeletedTaskItem> listDeletedTaskItems = new();
+    private TaskItem selectedTaskItem = new ();
+    private int CompletedTasks;
+    private int NotStartedTasks;
+    private int InProgressTasks;
+    private int TotalTasks;
+    //
+
+
     protected override void OnInitialized()
     {
         taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
-        Load();
-        _auxDeskServices.CRUDPermenentDelete();
+        LoadTaskItems();
+        TaskMetaData();
+        //_auxDeskServices.CRUDPermenentDelete();
     }
 
     private void DirectToNewTask()
@@ -171,16 +181,8 @@
 
         DateOnly.TryParse(e.Value.ToString(), out newDate);
         taskDate = newDate;
-        Load();
-    }
-
-    private List<UserTask> FilterTasks(List<UserTask> listUserTasks)
-    {
-        List<UserTask> filterUserTasks = listUserTasks.Where(task => task.AssignedDate == taskDate).ToList();
-        filterUserTasks = filterUserTasks.Where(task => !task.IsDeleted).ToList();
-        filterUserTasks = filterUserTasks.OrderBy(task => task.Priority).ToList();
-
-        return filterUserTasks;
+        LoadTaskItems();
+        TaskMetaData();
     }
 
     private void ToggleDropdownPriority()
@@ -203,109 +205,110 @@
         isDropdownOpenStatus = !isDropdownOpenStatus;
     }
 
+    private void TaskMetaData()
+    {
+        NotStartedTasks = 0;
+        InProgressTasks = 0;
+        CompletedTasks = 0;
+
+        foreach (TaskItem taskItem in listTaskItems)
+        {
+            if (taskItem.NotStarted())
+            {
+                NotStartedTasks++;
+            }
+            else if (taskItem.InProgress())
+            {
+                InProgressTasks++;
+            }
+            else if (taskItem.IsDone)
+            {
+                CompletedTasks++;
+            }
+        }
+        TotalTasks = listTaskItems.Count();
+    }
+
     private void SelectStatus(int status)
     {
-        if (selectedTask.TaskGUID == "")
-        {
-            return;
-        }
+        // if (selectedTask.TaskGUID == "")
+        // {
+        //     return;
+        // }
 
-        DateTime time = DateTime.UtcNow;
-        List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
+        // DateTime time = DateTime.UtcNow;
+        // List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
 
-        UserTask editTask = listUserTasks.FirstOrDefault(userTask => userTask.TaskGUID == selectedTask.TaskGUID);
+        // UserTask editTask = listUserTasks.FirstOrDefault(userTask => userTask.TaskGUID == selectedTask.TaskGUID);
 
-        if (status == 1)
-        {
-            editTask.StartDateTime = null;
-            editTask.EndDateTime = null;
-            editTask.IsDone = false;
-        }
-        else if (status == 2)
-        {
-            if (selectedTask.StartDateTime == null)
-            {
-                editTask.StartDateTime = time;
-            }
+        // if (status == 1)
+        // {
+        //     editTask.StartDateTime = null;
+        //     editTask.EndDateTime = null;
+        //     editTask.IsDone = false;
+        // }
+        // else if (status == 2)
+        // {
+        //     if (selectedTask.StartDateTime == null)
+        //     {
+        //         editTask.StartDateTime = time;
+        //     }
 
-            editTask.EndDateTime = null;
-            editTask.IsDone = false;
-        }
-        else
-        {
-            if (selectedTask.StartDateTime == null)
-            {
-                editTask.StartDateTime = time;
-            }
-            editTask.EndDateTime = time;
-            editTask.IsDone = true;
-        }
+        //     editTask.EndDateTime = null;
+        //     editTask.IsDone = false;
+        // }
+        // else
+        // {
+        //     if (selectedTask.StartDateTime == null)
+        //     {
+        //         editTask.StartDateTime = time;
+        //     }
+        //     editTask.EndDateTime = time;
+        //     editTask.IsDone = true;
+        // }
 
-        _auxDeskServices.Save(listUserTasks, null, false);
-        Load();
+        // _auxDeskServices.Save(listUserTasks, null, false);
+        // LoadTaskItems();
 
-        isDropdownOpenStatus = false;
-        selectedStatus = "Done";
+        // isDropdownOpenStatus = false;
+        // selectedStatus = "Done";
 
-        if (status == 1) { selectedStatus = "Not started"; }
-        else if (status == 2) { selectedStatus = "In progress"; }
+        // if (status == 1) { selectedStatus = "Not started"; }
+        // else if (status == 2) { selectedStatus = "In progress"; }
 
     }
 
-    private void Load()
+    private async void LoadTaskItems()
     {
+        listTaskItems = await _taskService.GetTaskItemsAsync(taskDate);
+        listTaskItems = listTaskItems.Where(t => !t.IsDeleted).ToList();
 
-        List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
-
-        if (listUserTasks == null || listUserTasks.Count == 0)
+        if (listTaskItems == null || listTaskItems.Count == 0)
         {
             return;
         }
-        listDaysUserTasks = FilterTasks(listUserTasks);
-
-        TotalTasks = listDaysUserTasks.Count;
-        CompletedTasks = listDaysUserTasks.Count(task => task.EndDateTime != null && task.IsDone);
-        NotStartedTasks = listDaysUserTasks.Count(task => task.StartDateTime == null);
-        InProgressTasks = listDaysUserTasks.Count(task => task.StartDateTime != null && !task.IsDone);
     }
 
-    private void DeleteTask(string taskGUID)
+    private async void DeleteTaskItem(string taskGUID)
     {
-
-        List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
-
-        UserTask taskToDelete = listUserTasks.FirstOrDefault(task => task.TaskGUID == taskGUID);
-        taskToDelete.IsDeleted = true;
-
-        if (taskToDelete.IsDone)
+        if (listAllTaskItems.Count() == 0)
         {
-            CompletedTasks--;
-        }
-        if (taskToDelete.StartDateTime == null)
-        {
-            NotStartedTasks--;
-        } 
-        else
-        {
-            InProgressTasks--;
-        }
-        TotalTasks--;
-
-        if (selectedTask.TaskGUID == taskToDelete.TaskGUID)
-        {
-            selectedTask = new UserTask();
+            listAllTaskItems = await _taskService.GetTaskItemsAsync(null);
         }
 
-        DeletedTask deletedTask = new DeletedTask {
-            TaskGUID = taskToDelete.TaskGUID,
-            TaskDeletedDate = DateOnly.FromDateTime(DateTime.UtcNow),
-        };
+        TaskItem itemToDelete = await _taskService.GetTaskItemAsync(listAllTaskItems, taskGUID);
+        itemToDelete.IsDeleted = true;
 
-        _auxDeskServices.DeleteTask(deletedTask);
+        if (listDeletedTaskItems.Count == 0)
+        {
+            listDeletedTaskItems = await _taskService.GetDeletedTaskItemsAsync();
+        }
 
-        _auxDeskServices.Save(listUserTasks, null, false);
+        await _taskService.DeleteTaskItemAsync(listDeletedTaskItems, itemToDelete);
+        await _taskService.UpdateTaskItemsAsync(listAllTaskItems);
 
-        listDaysUserTasks = FilterTasks(listUserTasks);
+        LoadTaskItems();
+        TaskMetaData();
     }
 
     private void ShowProgress()
@@ -322,19 +325,19 @@
         }
     }
 
-    private void SelectTask(string taskGUID)
+    private async void SelectTaskItem(string taskGUID)
     {
-        selectedTask = listDaysUserTasks.FirstOrDefault(task => task.TaskGUID == taskGUID);
+        selectedTaskItem = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
 
-        if (selectedTask.Priority == 1) { selectedPriority = "High"; }
-        else if (selectedTask.Priority == 2) { selectedPriority = "Medium"; }
+        if (selectedTaskItem.Priority == 1) { selectedPriority = "High"; }
+        else if (selectedTaskItem.Priority == 2) { selectedPriority = "Medium"; }
         else { selectedPriority = "Low"; }
 
-        if (selectedTask.StartDateTime == null)
+        if (selectedTaskItem.StartDateTime == null)
         {
             selectedStatus = "Not started";
         }
-        else if (selectedTask.StartDateTime != null && !selectedTask.IsDone)
+        else if (selectedTaskItem.StartDateTime != null && !selectedTaskItem.IsDone)
         {
             selectedStatus = "In progress";
         }

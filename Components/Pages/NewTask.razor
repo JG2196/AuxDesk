@@ -4,7 +4,11 @@
 @using System.IO
 @using System.Text.Json
 
+@using Models;
+@using Services;
+
 @inject NavigationManager _navigationManager;
+@inject ITaskService _taskService;
 @page "/newTask"
 
 <h3>NewTask</h3>
@@ -44,23 +48,13 @@
 </div>
 @code {
 
-    AuxDeskServices _auxDeskServices = new AuxDeskServices();
-    private List<UserTask> listUserTasks = new();
     private string? taskTitle;
     private string? taskNotes;
     private int taskPriority = 2;
-
     DateOnly taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
-
     private bool isDropdownOpenPriorty = false;
     private string selectedPriority = "Medium";
-
-    protected override void OnInitialized()
-    {
-        //AuxDeskServices _auxDeskServices = new AuxDeskServices();
-
-        listUserTasks = _auxDeskServices.GetUserTasks();
-    }
+    List<TaskItem> listTaskItems = new();
 
     private void ToggleDropdownPriority()
     {
@@ -72,48 +66,55 @@
         taskPriority = priority;
         isDropdownOpenPriorty = false;
         selectedPriority = "Low";
-        
+
         if (priority == 1) { selectedPriority = "High"; }
         else if (priority == 2) { selectedPriority = "Medium"; }
     }
+
     private void CancelTask()
     {
         _navigationManager.NavigateTo("/");
     }
 
-    private async Task CreateTask()
+    private async void CreateTask()
     {
-        if (!string.IsNullOrWhiteSpace(taskTitle))
+        TaskItem newTaskItem = new();
+
+        newTaskItem.TaskGUID = Guid.NewGuid().ToString();
+        newTaskItem.Title = taskTitle;
+        newTaskItem.Notes = taskNotes;
+        newTaskItem.Priority = taskPriority;
+        newTaskItem.AssignedDate = taskDate;
+
+        // Validate on domain layer
+        string validationMessage = string.Empty;
+        bool bInvalid = false;
+        if (string.IsNullOrEmpty(newTaskItem.Title))
         {
-            string taskGUID = Guid.NewGuid().ToString();
-
-            TaskData taskData = new TaskData
-            {
-                TaskGUID = taskGUID,
-                Title = taskTitle,
-                Notes = taskNotes,
-            };
-
-            listUserTasks.Add(new UserTask
-            {
-                TaskGUID = taskGUID,
-                AssignedDate = taskDate,
-                Priority = taskPriority,
-                UserTaskData = taskData
-            });
-
-            taskTitle = string.Empty;
-            taskNotes = string.Empty;
-            SelectPriority(2);
-            taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
-
-            await Save();
+            validationMessage += "Title is required.";
+            bInvalid = true;
         }
-    }
-    private async Task Save()
-    {
-        //AuxDeskServices _auxDeskServices = new AuxDeskServices();
-        _auxDeskServices.Save(listUserTasks, null, false);
-        await App.Current.MainPage.DisplayAlert("Task Saved", $"Task saved sucessfully", "OK");
+        if (newTaskItem.AssignedDate == null)
+        {
+            validationMessage += " Valid date is required.";
+            bInvalid = true;
+        }
+        if (bInvalid)
+        {
+            await App.Current.MainPage.DisplayAlert("Validation Error", validationMessage, "OK");
+            return;
+        }
+
+        if (listTaskItems.Count == 0)
+        {
+            listTaskItems = await _taskService.GetTaskItemsAsync(null);
+        }
+
+        await _taskService.SaveTaskItemAsync(listTaskItems, newTaskItem);
+
+        taskTitle = string.Empty;
+        taskNotes = string.Empty;
+
+        await App.Current.MainPage.DisplayAlert("Task Saved", "Task saved sucessfully", "OK");
     }
 }
