@@ -32,5 +32,3 @@ AuxDesk aims to be a single source for:
 *(Coming soon - setup and installation instructions will be added as the project progresses)*
 
 ---
-
-*Built with focus. Designed for clarity.*
