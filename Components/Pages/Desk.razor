@@ -138,10 +138,6 @@
 </div>
 
 @code {
-
-    //AuxDeskServices _auxDeskServices = new AuxDeskServices();
-    //private List<UserTask> listDaysUserTasks = new List<UserTask>();
-    //private UserTask selectedTask = new UserTask();
     DateOnly todayDate = DateOnly.FromDateTime(DateTime.UtcNow);
     DateOnly taskDate;
     public string ProgressDisplay = "none";
@@ -155,7 +151,8 @@
     private string selectedStatus = "Not started";
 
     //
-    private List<TaskItem> listTaskItems = new ();
+    private List<TaskItem> listAllTaskItems = new();
+    private List<TaskItem> listTaskItems = new();
     private List<DeletedTaskItem> listDeletedTaskItems = new();
     private TaskItem selectedTaskItem = new ();
     private int CompletedTasks;
@@ -186,15 +183,6 @@
         taskDate = newDate;
         LoadTaskItems();
         TaskMetaData();
-    }
-
-    private List<UserTask> FilterTasks(List<UserTask> listUserTasks)
-    {
-        List<UserTask> filterUserTasks = listUserTasks.Where(task => task.AssignedDate == taskDate).ToList();
-        filterUserTasks = filterUserTasks.Where(task => !task.IsDeleted).ToList();
-        filterUserTasks = filterUserTasks.OrderBy(task => task.Priority).ToList();
-
-        return filterUserTasks;
     }
 
     private void ToggleDropdownPriority()
@@ -233,7 +221,7 @@
             {
                 InProgressTasks++;
             }
-            else if (taskItem.IsCompleted())
+            else if (taskItem.IsDone)
             {
                 CompletedTasks++;
             }
@@ -303,8 +291,13 @@
 
     private async void DeleteTaskItem(string taskGUID)
     {
-        TaskItem itemToDelete = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
-        itemToDelete.Delete();
+        if (listAllTaskItems.Count() == 0)
+        {
+            listAllTaskItems = await _taskService.GetTaskItemsAsync(null);
+        }
+
+        TaskItem itemToDelete = await _taskService.GetTaskItemAsync(listAllTaskItems, taskGUID);
+        itemToDelete.IsDeleted = true;
 
         if (listDeletedTaskItems.Count == 0)
         {
@@ -312,9 +305,10 @@
         }
 
         await _taskService.DeleteTaskItemAsync(listDeletedTaskItems, itemToDelete);
-        await _taskService.UpdateTaskItemsAsync(listTaskItems);
+        await _taskService.UpdateTaskItemsAsync(listAllTaskItems);
 
         LoadTaskItems();
+        TaskMetaData();
     }
 
     private void ShowProgress()

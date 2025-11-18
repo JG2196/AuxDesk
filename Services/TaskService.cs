@@ -53,11 +53,11 @@ namespace AuxDesk.Services
         }
         public async Task DeleteTaskItemAsync(List<DeletedTaskItem> listDeletedTaskItems, TaskItem taskItemToDelete)
         {
-            listDeletedTaskItems.Add(new DeletedTaskItem
-            {
-                TaskGUID = taskItemToDelete.TaskGUID,
-                DateDeleted = DateOnly.FromDateTime(DateTime.UtcNow)
-            });
+            DeletedTaskItem deletedTaskItem = new();
+            deletedTaskItem.TaskGUID = taskItemToDelete.TaskGUID;
+            deletedTaskItem.SetDateDeleted();
+
+            listDeletedTaskItems.Add(deletedTaskItem);
 
             await _recycleRepository.SaveAsync(listDeletedTaskItems);
         }
@@ -65,15 +65,19 @@ namespace AuxDesk.Services
         {
             await _taskRepository.SaveAsync(listTaskItems);
         }
+        public async Task UpdateDeletedTaskItemsAsync(List<DeletedTaskItem> listDeletedTaskItems)
+        {
+            await _recycleRepository.SaveAsync(listDeletedTaskItems);
+        }
         public async Task SaveTaskItemAsync(List<TaskItem> listTaskItems, TaskItem taskItem)
         {
             listTaskItems.Add(taskItem);
             await _taskRepository.SaveAsync(listTaskItems);
         }
-        //    public Task<List<TaskItem>> FilterTask() 
-        //    {
+        //public Task<List<TaskItem>> FilterTask() 
+        //{
 
-        //    }
+        //}
 
     }
     }

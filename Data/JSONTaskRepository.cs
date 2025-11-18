@@ -10,8 +10,6 @@ namespace AuxDesk.Data
     using AuxDesk.Models;
     using System.Text.Json;
 
-    //using Windows.UI.Input.Inking.Analysis; Not sure why this was here in the first place
-
     public class JSONTaskRepository : ITaskRepository
     {
         private readonly string taskPath = Path.Combine(FileSystem.AppDataDirectory, "userTasks.json");
