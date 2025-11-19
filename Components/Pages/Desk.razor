@@ -1,5 +1,4 @@
 ﻿@using Data;
-@using AuxDeskServices;
 @using Microsoft.Maui.Storage
 @using System.IO
 @using System.Text.Json
@@ -173,7 +172,6 @@
         taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
         LoadTaskItems();
         TaskMetaData();
-        //_auxDeskServices.CRUDPermenentDelete();
     }
 
     private void DirectToNewTask()

@@ -86,7 +86,7 @@ namespace AuxDesk.Models
     }
     public class DeletedTaskItem : TaskItemData
     {
-        public DateOnly? DateDeleted { get; private set; }
+        public DateOnly? DateDeleted { get; set; }
         public void SetDateDeleted()
         {
             DateDeleted = DateOnly.FromDateTime(DateTime.UtcNow);
