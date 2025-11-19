@@ -4,7 +4,11 @@
 @using System.IO
 @using System.Text.Json
 
+@using Models;
+@using Services;
+
 @inject NavigationManager _navigationManager
+@inject ITaskService _taskService
 
 @page "/allTasks"
 
@@ -13,246 +17,194 @@
 <div class="row gx-3">
     <div class="col">
         <div class="p-2">
-        <h6><b>Unassigned Date</b></h6>
-        <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
-            @foreach (UserTask userTask in listTasksNoDate)
+            <h6><b>Not Started</b></h6>
+            <div class="border border-primary p-3 rounded-3 content-scrollable" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
+            @foreach (TaskItem taskItem in listNotStarted)
             {
                 <div class="col">
-                <div class="card" style="margin-top:8px">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col" @onclick="() => SelectTask(userTask.TaskGUID)">
-                                <h6 class="card-title"><b>@userTask.UserTaskData.Title</b></h6>
-                            </div>
-                            <div class="col" >
-                                    @if (userTask.Priority == 1) {
+                    <div class="card" style="margin-top:8px">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col" @onclick="() => SelectTaskItem(taskItem.TaskGUID)">
+                                    <h6 class="card-title"><b>@taskItem.Title</b></h6>
+                                </div>
+                                <div class="col">
+                                    @if (taskItem.Priority == 1)
+                                    {
                                         <p class="text-center fw-semibold" style="background-color:red;border-radius:4px">High</p>
                                     }
-                                    @if (userTask.Priority == 2)
+                                    @if (taskItem.Priority == 2)
                                     {
                                         <p class="text-center fw-semibold" style="background-color:orange;border-radius:4px">Medium</p>
                                     }
-                                    @if (userTask.Priority == 3)
+                                    @if (taskItem.Priority == 3)
                                     {
                                         <p class="text-center fw-semibold" style="background-color:green;border-radius:4px">Low</p>
                                     }
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                @if (userTask.StartDateTime == null) {
-                                    <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Not started</p>
-                                }
-                                @if (userTask.StartDateTime != null && !userTask.IsDone)
-                                {
-                                    <p class="text-center fw-semibold" style="width:100px;background-color:yellow;border-radius:4px">In progress</p>
-                                }
-                                @if (userTask.IsDone)
-                                {
-                                    <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Done</p>
-                                }
+                            <div class="row">
+                                <div class="col">
+                                    @if (taskItem.StartDateTime == null)
+                                    {
+                                        <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Not started</p>
+                                    }
+                                    @if (taskItem.StartDateTime != null && !taskItem.IsDone)
+                                    {
+                                        <p class="text-center fw-semibold" style="width:100px;background-color:yellow;border-radius:4px">In progress</p>
+                                    }
+                                    @if (taskItem.IsDone)
+                                    {
+                                        <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Done</p>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
                 </div>
             }
             </div>
-            </div>
+        </div>
     </div>
-        
     <div class="col">
         <div class="p-2">
-        <h6><b>Not Started</b></h6>
-        <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
-        @foreach (UserTask userTask in listTasksNotStarted)
-        {
-            <div class="col">
-                <div class="card" style="margin-top:8px">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col" @onclick="() => SelectTask(userTask.TaskGUID)">
-                                <h6 class="card-title"><b>@userTask.UserTaskData.Title</b></h6>
+            <h6><b>In Progress</b></h6>
+            <div class="border border-primary p-3 rounded-3 content-scrollable" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
+            @foreach (TaskItem taskItem in listInProgress)
+            {
+                <div class="col">
+                    <div class="card" style="margin-top:8px">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col" @onclick="() => SelectTaskItem(taskItem.TaskGUID)">
+                                    <h6 class="card-title"><b>@taskItem.Title</b></h6>
+                                </div>
+                                <div class="col">
+                                    @if (taskItem.Priority == 1)
+                                    {
+                                        <p class="text-center fw-semibold" style="background-color:red;border-radius:4px">High</p>
+                                    }
+                                    @if (taskItem.Priority == 2)
+                                    {
+                                        <p class="text-center fw-semibold" style="background-color:orange;border-radius:4px">Medium</p>
+                                    }
+                                    @if (taskItem.Priority == 3)
+                                    {
+                                        <p class="text-center fw-semibold" style="background-color:green;border-radius:4px">Low</p>
+                                    }
+                                </div>
                             </div>
-                            <div class="col">
-                                @if (userTask.Priority == 1)
-                                {
-                                    <p class="text-center fw-semibold" style="background-color:red;border-radius:4px">High</p>
-                                }
-                                @if (userTask.Priority == 2)
-                                {
-                                    <p class="text-center fw-semibold" style="background-color:orange;border-radius:4px">Medium</p>
-                                }
-                                @if (userTask.Priority == 3)
-                                {
-                                    <p class="text-center fw-semibold" style="background-color:green;border-radius:4px">Low</p>
-                                }
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                @if (userTask.StartDateTime == null)
-                                {
-                                    <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Not started</p>
-                                }
-                                @if (userTask.StartDateTime != null && !userTask.IsDone)
-                                {
-                                    <p class="text-center fw-semibold" style="width:100px;background-color:yellow;border-radius:4px">In progress</p>
-                                }
-                                @if (userTask.IsDone)
-                                {
-                                    <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Done</p>
-                                }
+                            <div class="row">
+                                <div class="col">
+                                    @if (taskItem.StartDateTime == null)
+                                    {
+                                        <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Not started</p>
+                                    }
+                                    @if (taskItem.StartDateTime != null && !taskItem.IsDone)
+                                    {
+                                        <p class="text-center fw-semibold" style="width:100px;background-color:yellow;border-radius:4px">In progress</p>
+                                    }
+                                    @if (taskItem.IsDone)
+                                    {
+                                        <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Done</p>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            }
             </div>
-        }
-        </div>
         </div>
     </div>
     <div class="col">
         <div class="p-2">
-        <h6><b>In Progress</b></h6>
-        <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
-        @foreach (UserTask userTask in listTasksInProgress)
-        {
-            <div class="col">
-                <div class="card" style="margin-top:8px">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col" @onclick="() => SelectTask(userTask.TaskGUID)">
-                                <h6 class="card-title"><b>@userTask.UserTaskData.Title</b></h6>
+            <h6><b>Done</b></h6>
+            <div class="border border-primary p-3 rounded-3 content-scrollable" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
+            @foreach (TaskItem taskItem in listDone)
+            {
+                <div class="col">
+                    <div class="card" style="margin-top:8px">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col" @onclick="() => SelectTaskItem(taskItem.TaskGUID)">
+                                    <h6 class="card-title"><b>@taskItem.Title</b></h6>
+                                </div>
+                                <div class="col">
+                                    @if (taskItem.Priority == 1)
+                                    {
+                                        <p class="text-center fw-semibold" style="background-color:red;border-radius:4px">High</p>
+                                    }
+                                    @if (taskItem.Priority == 2)
+                                    {
+                                        <p class="text-center fw-semibold" style="background-color:orange;border-radius:4px">Medium</p>
+                                    }
+                                    @if (taskItem.Priority == 3)
+                                    {
+                                        <p class="text-center fw-semibold" style="background-color:green;border-radius:4px">Low</p>
+                                    }
+                                </div>
                             </div>
-                            <div class="col">
-                                @if (userTask.Priority == 1)
-                                {
-                                    <p class="text-center fw-semibold" style="background-color:red;border-radius:4px">High</p>
-                                }
-                                @if (userTask.Priority == 2)
-                                {
-                                    <p class="text-center fw-semibold" style="background-color:orange;border-radius:4px">Medium</p>
-                                }
-                                @if (userTask.Priority == 3)
-                                {
-                                    <p class="text-center fw-semibold" style="background-color:green;border-radius:4px">Low</p>
-                                }
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                @if (userTask.StartDateTime == null)
-                                {
-                                    <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Not started</p>
-                                }
-                                @if (userTask.StartDateTime != null && !userTask.IsDone)
-                                {
-                                    <p class="text-center fw-semibold" style="width:100px;background-color:yellow;border-radius:4px">In progress</p>
-                                }
-                                @if (userTask.IsDone)
-                                {
-                                    <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Done</p>
-                                }
+                            <div class="row">
+                                <div class="col">
+                                    @if (taskItem.StartDateTime == null)
+                                    {
+                                        <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Not started</p>
+                                    }
+                                    @if (taskItem.StartDateTime != null && !taskItem.IsDone)
+                                    {
+                                        <p class="text-center fw-semibold" style="width:100px;background-color:yellow;border-radius:4px">In progress</p>
+                                    }
+                                    @if (taskItem.IsDone)
+                                    {
+                                        <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Done</p>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            }
             </div>
-        }
-                </div>
         </div>
     </div>
     <div class="col">
         <div class="p-2">
-        <h6><b>Done</b></h6>
-        <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
-        @foreach (UserTask userTask in listTasksDone)
-        {
-            <div class="col">
-                <div class="card" style="margin-top:8px">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col" @onclick="() => SelectTask(userTask.TaskGUID)">
-                                <h6 class="card-title"><b>@userTask.UserTaskData.Title</b></h6>
-                            </div>
-                            <div class="col">
-                                @if (userTask.Priority == 1)
-                                {
-                                    <p class="text-center fw-semibold" style="background-color:red;border-radius:4px">High</p>
-                                }
-                                @if (userTask.Priority == 2)
-                                {
-                                    <p class="text-center fw-semibold" style="background-color:orange;border-radius:4px">Medium</p>
-                                }
-                                @if (userTask.Priority == 3)
-                                {
-                                    <p class="text-center fw-semibold" style="background-color:green;border-radius:4px">Low</p>
-                                }
+            <h6><b>Selected Task</b></h6>
+            <div class="border border-primary p-3 rounded-3 parent-container" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
+                    <div class="header-fixed">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Title..." @bind="@selectedTaskItem.Title" disabled>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownPriority" type="button">
+                                    @selectedPriority
+                                </button>
+                                <ul class="dropdown-menu @(isDropdownOpenPriorty ? "show" : "")" style="@(isDropdownOpenPriorty ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
+                                    <li><a class="dropdown-item" @onclick="@(() => SelectPriority(1))">High</a></li>
+                                    <li><a class="dropdown-item" @onclick="@(() => SelectPriority(2))">Medium</a></li>
+                                    <li><a class="dropdown-item" @onclick="@(() => SelectPriority(3))">Low</a></li>
+                                </ul>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col">
-                                @if (userTask.StartDateTime == null)
-                                {
-                                    <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Not started</p>
-                                }
-                                @if (userTask.StartDateTime != null && !userTask.IsDone)
-                                {
-                                    <p class="text-center fw-semibold" style="width:100px;background-color:yellow;border-radius:4px">In progress</p>
-                                }
-                                @if (userTask.IsDone)
-                                {
-                                    <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Done</p>
-                                }
-                            </div>
+                        <div class="input-group mb-3  text-center">
+                            <span class="input-group-text" id="inputGroup-sizing-default">Date</span>
+                            <input type="date" class="form-control" aria-label="Sizing example input" @bind="@selectedTaskItem.AssignedDate" aria-describedby="inputGroup-sizing-default">
                         </div>
+                        </div>
+                    <div class="input-group" style="flex:1">
+                        <textarea class="form-control" aria-label="With textarea" @bind="@selectedTaskItem.Notes" placeholder="Notes"></textarea>
                     </div>
-                </div>
             </div>
-        }
-        </div>
-        </div>
-    </div>
-    <div class="col">
-        <div class="p-2">
-        <h6><b>Selected Task</b></h6>
-        <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
-        <div class="p-2">
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="Title..." @bind="@selectedTask.UserTaskData.Title" disabled>
-                <div class="dropdown">
-                    <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownPriority" type="button">
-                        @selectedPriority
-                    </button>
-                    <ul class="dropdown-menu @(isDropdownOpenPriorty ? "show" : "")" style="@(isDropdownOpenPriorty ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
-                        <li><a class="dropdown-item" @onclick="@(() => SelectPriority(1))">High</a></li>
-                        <li><a class="dropdown-item" @onclick="@(() => SelectPriority(2))">Medium</a></li>
-                        <li><a class="dropdown-item" @onclick="@(() => SelectPriority(3))">Low</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="input-group mb-3  text-center">
-                <span class="input-group-text" id="inputGroup-sizing-default">Date</span>
-                <input type="date" class="form-control" aria-label="Sizing example input" @bind="@selectedTask.AssignedDate" aria-describedby="inputGroup-sizing-default">
-            </div>
-            <div class="input-group" style="height:60vh">
-                <textarea class="form-control" aria-label="With textarea" @bind="@selectedTask.UserTaskData.Notes" placeholder="Notes"></textarea>
-            </div>
-        </div>
-                </div>
         </div>
     </div>
 </div>
 
 @code {
-
-    AuxDeskServices _auxDeskServices = new AuxDeskServices();
-    private List<UserTask> listTasksNoDate = new List<UserTask>();
-    private List<UserTask> listTasksNotStarted = new List<UserTask>();
-    private List<UserTask> listTasksInProgress = new List<UserTask>();
-    private List<UserTask> listTasksDone = new List<UserTask>();
-    private UserTask selectedTask = new UserTask();
+    private List<TaskItem> listTaskItems = new();
+    private List<TaskItem> listNotStarted = new ();
+    private List<TaskItem> listInProgress = new();
+    private List<TaskItem> listDone = new();
+    private TaskItem selectedTaskItem = new();
 
     public string ProgressDisplay = "none";
     public bool BProgressExpanded = false;
@@ -263,7 +215,7 @@
 
     protected override void OnInitialized()
     {
-        Load();
+        LoadTaskItems();
     }
 
     private void ToggleDropdownPriority()
@@ -280,28 +232,48 @@
         if (priority == 1) { selectedPriority = "High"; }
         else if (priority == 2) { selectedPriority = "Medium"; }
     }
-
-
-    private void Load()
+    private async void LoadTaskItems()
     {
+        listTaskItems = await _taskService.GetTaskItemsAsync(null);
 
-        List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
-
-        if (listUserTasks == null || listUserTasks.Count == 0)
+        if (listTaskItems == null || listTaskItems.Count == 0)
         {
             return;
         }
 
-        listTasksNoDate = listUserTasks.Where(userTask => userTask.AssignedDate == null && !userTask.IsDeleted).OrderBy(userTask => userTask.Priority).ToList();
-        listTasksNotStarted = listUserTasks.Where(userTask => userTask.StartDateTime == null && !userTask.IsDeleted).OrderBy(userTask => userTask.AssignedDate).ToList();
-        listTasksInProgress = listUserTasks.Where(userTask => userTask.StartDateTime != null && !userTask.IsDone && !userTask.IsDeleted).OrderBy(userTask => userTask.AssignedDate).ToList();
-        listTasksDone = listUserTasks.Where(userTask => userTask.IsDone == true && !userTask.IsDeleted).OrderBy(userTask => userTask.AssignedDate).ToList();
+        foreach (TaskItem taskItem in listTaskItems)
+        {
+            if (taskItem.IsDeleted)
+            {
+                continue;
+            }
+            if (taskItem.NotStarted())
+            {
+                // Add to not started
+                listNotStarted.Add(taskItem);
+                continue;
+            }
+            if (taskItem.InProgress())
+            {
+                // Add to In Progress
+                listInProgress.Add(taskItem);
+                continue;
+            }
+            if (taskItem.IsDone)
+            {
+                // Add to Done
+                listDone.Add(taskItem);
+                continue;
+            }
+        }
     }
 
-    private void SelectTask(string taskGUID)
+    private async void SelectTaskItem(string taskGUID)
     {
-        List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
-
-        selectedTask = listUserTasks.FirstOrDefault(task => task.TaskGUID == taskGUID);
+        selectedTaskItem = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
+        
+        if (selectedTaskItem.Priority == 1) { selectedPriority = "High"; }
+        else if (selectedTaskItem.Priority == 2) { selectedPriority = "Medium"; }
+        else { selectedPriority = "Low"; }
     }
 }

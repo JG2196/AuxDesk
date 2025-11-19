@@ -87,19 +87,19 @@
         newTaskItem.AssignedDate = taskDate;
 
         // Validate on domain layer
-        bool titleIsInvalid = newTaskItem.ValidateTitle();
-        bool AssignedDateIsValid = newTaskItem.ValidateAssignedDate();
-
         string validationMessage = string.Empty;
-        if (titleIsInvalid)
+        bool bInvalid = false;
+        if (string.IsNullOrEmpty(newTaskItem.Title))
         {
             validationMessage += "Title is required.";
+            bInvalid = true;
         }
-        if (!AssignedDateIsValid)
+        if (newTaskItem.AssignedDate == null)
         {
             validationMessage += " Valid date is required.";
+            bInvalid = true;
         }
-        if (titleIsInvalid || !AssignedDateIsValid)
+        if (bInvalid)
         {
             await App.Current.MainPage.DisplayAlert("Validation Error", validationMessage, "OK");
             return;

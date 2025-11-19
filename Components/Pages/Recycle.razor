@@ -1,6 +1,11 @@
 ﻿@using Data;
 @using AuxDeskServices;
 
+@using Models;
+@using Services;
+
+@inject ITaskService _taskService
+
 @page "/recycle"
 
 <h3>Recycle</h3>
@@ -9,27 +14,27 @@
     <div class="col-sm-6">
         <div class="p-2">
             <h6><b>Deleted Tasks</b></h6>
-            <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
-            <div class="row row-cols-2">
-            @foreach (UserTask userTask in listUsersDeletedTasks)
+            <div class="border border-primary p-3 rounded-3 parent-container" style="border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
+                <div class="row row-cols-2 content-scrollable">
+                    @foreach (TaskItem taskItem in listTaskItems)
             {
                 
                 <div class="col">
                     <div class="card" style="margin-top:8px">
                         <div class="card-body">
                             <div class="row">
-                                <div class="col" @onclick="() => SelectTask(userTask.TaskGUID)">
-                                    <h6 class="card-title"><b>@userTask.UserTaskData.Title</b></h6>
+                                        <div class="col" @onclick="() => SelectTaskItem(taskItem.TaskGUID)">
+                                            <h6 class="card-title"><b>@taskItem.Title</b></h6>
                                 </div>
                                 <div class="col" >
-                                    @if (userTask.Priority == 1) {
+                                            @if (taskItem.Priority == 1) {
                                         <p class="text-center fw-semibold" style="background-color:red;border-radius:4px">High</p>
                                     }
-                                    @if (userTask.Priority == 2)
+                                                @if (taskItem.Priority == 2)
                                     {
                                         <p class="text-center fw-semibold" style="background-color:orange;border-radius:4px">Medium</p>
                                     }
-                                    @if (userTask.Priority == 3)
+                                            @if (taskItem.Priority == 3)
                                     {
                                         <p class="text-center fw-semibold" style="background-color:green;border-radius:4px">Low</p>
                                     }
@@ -39,7 +44,7 @@
                                 <div class="col">
                                     <div class="btn-toolbar" role="toolbar">
                                         <div class="btn-group" style="padding-left:8px">
-                                            <button type="button" class="btn btn-danger" @onclick="() => RestoreTask(userTask.TaskGUID)">Restore</button>
+                                                    <button type="button" class="btn btn-danger" @onclick="() => RestoreTaskItem(taskItem.TaskGUID)">Restore</button>
                                         </div>
                                     </div>
                                 </div>
@@ -56,19 +61,21 @@
     <div class="col-sm-6">
         <div class="p-2">
             <h6><b>Selected Task</b></h6>
-            <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="Title..." value="@selectedTask.UserTaskData.Title" disabled>
-                <div class="dropdown">
-                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" disabled>@selectedPriority</button>
+            <div class="border border-primary p-3 rounded-3 parent-container" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
+                <div class="header-fixed">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Title..." value="@selectedTaskItem.Title" disabled>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" disabled>@selectedPriority</button>
+                    </div>
+                </div>
+                <div class="input-group mb-3  text-center">
+                    <span class="input-group-text" id="inputGroup-sizing-default" disabled>Date</span>
+                    <input type="date" class="form-control" aria-label="Sizing example input" @bind="@selectedTaskItem.AssignedDate" aria-describedby="inputGroup-sizing-default" disabled>
                 </div>
             </div>
-            <div class="input-group mb-3  text-center">
-                <span class="input-group-text" id="inputGroup-sizing-default" disabled>Date</span>
-                <input type="date" class="form-control" aria-label="Sizing example input" value="@selectedTask.AssignedDate.ToString("yyyy-MM-dd")" aria-describedby="inputGroup-sizing-default" disabled>
-            </div>
-            <div class="input-group" style="height:60vh">
-                <textarea class="form-control" aria-label="With textarea" placeholder="Notes" disabled>@selectedTask.UserTaskData.Notes</textarea>
+            <div class="input-group" style="flex:1">
+                    <textarea class="form-control" aria-label="With textarea" placeholder="Notes" disabled>@selectedTaskItem.Notes</textarea>
             </div>
             </div>
         </div>
@@ -76,9 +83,11 @@
 </div>
 
 @code {
-    AuxDeskServices _auxDeskServices = new AuxDeskServices();
-    private List<UserTask> listUsersDeletedTasks = new List<UserTask>();
-    private UserTask selectedTask = new UserTask();
+    DateOnly todayDate = DateOnly.FromDateTime(DateTime.UtcNow);
+    private List<DeletedTaskItem> listDeletedTaskItems = new();
+    private List<TaskItem> listAllTaskItems = new();
+    private List<TaskItem> listTaskItems = new();
+    private TaskItem selectedTaskItem = new();
 
     private bool isDropdownOpenPriorty = false;
     private string selectedPriority = "Medium";
@@ -86,49 +95,55 @@
 
     protected override void OnInitialized()
     {
-        AuxDeskServices _auxDeskServices = new AuxDeskServices();
+        LoadRecycledTasks();
+    }
+    private async void LoadRecycledTasks()
+    {
+        // Get recycled tasks
+        listDeletedTaskItems = await _taskService.GetDeletedTaskItemsAsync();
 
-        List<DeletedTask> listDeletedTasks = _auxDeskServices.GetDeletedTasks();
-
-        if (listDeletedTasks.Count == 0)
+        if (listDeletedTaskItems.Count == 0)
         {
             return;
         }
 
-        List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
+        // Get all tasks
+        listAllTaskItems = await _taskService.GetTaskItemsAsync(null);
 
-        foreach (DeletedTask deletedTask in listDeletedTasks)
+        // Add to list of tasks to show
+        foreach (DeletedTaskItem deletedTask in listDeletedTaskItems)
         {
-            UserTask selectedTask = listUserTasks.FirstOrDefault(userTask => userTask.TaskGUID == deletedTask.TaskGUID);
-            if (selectedTask != null)
+            TaskItem taskItem = listAllTaskItems.FirstOrDefault(taskItem => taskItem.TaskGUID == deletedTask.TaskGUID);
+            if (taskItem != null)
             {
-                listUsersDeletedTasks.Add(selectedTask);
+                listTaskItems.Add(taskItem);
             }
         }
     }
-    private void RestoreTask(string taskGUID)
+    private async void SelectTaskItem(string taskGUID)
     {
-        // Get all tasks
-        List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
+        selectedTaskItem = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
 
-        // Find task by TaskGUID
-        UserTask selectedTask = listUserTasks.FirstOrDefault(userTask => userTask.TaskGUID == taskGUID);
-
-        // Set isDeleted to false
-        selectedTask.IsDeleted = false;
-
-        List<DeletedTask> listDeletedTasks = _auxDeskServices.GetDeletedTasks();
-        listDeletedTasks.RemoveAll(deletedTask => deletedTask.TaskGUID == taskGUID);
-
-        listUsersDeletedTasks.RemoveAll(deletedTask => deletedTask.TaskGUID == taskGUID);
-        // Save all tasks
-        _auxDeskServices.Save(listUserTasks, null, false);
-        _auxDeskServices.Save(null, listDeletedTasks, true);
-
-        //StateHasChanged();
+        if (selectedTaskItem.Priority == 1) { selectedPriority = "High"; }
+        else if (selectedTaskItem.Priority == 2) { selectedPriority = "Medium"; }
+        else { selectedPriority = "Low"; }
     }
-    private void SelectTask(string taskGUID)
+    private async void RestoreTaskItem(string taskGUID)
     {
-        selectedTask = listUsersDeletedTasks.FirstOrDefault(task => task.TaskGUID == taskGUID);
+        // select task item in list of all task items
+        TaskItem taskToRestore = listAllTaskItems.FirstOrDefault(t => t.TaskGUID == taskGUID);
+
+        // switch isDeleted to false
+        taskToRestore.IsDeleted = false;
+
+        // Update tasks in data store
+        await _taskService.UpdateTaskItemsAsync(listAllTaskItems);
+
+        // remove from list of deleted tasks
+        listDeletedTaskItems.RemoveAll(t => t.TaskGUID == taskGUID);
+        listTaskItems.RemoveAll(t => t.TaskGUID == taskGUID);
+
+        // Update recycled tasks in data store
+        await _taskService.UpdateDeletedTaskItemsAsync(listDeletedTaskItems);
     }
 }
