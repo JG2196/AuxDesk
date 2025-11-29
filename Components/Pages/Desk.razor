@@ -2,12 +2,10 @@
 @using Microsoft.Maui.Storage
 @using System.IO
 @using System.Text.Json
-
 @using Models;
 @using Services;
 
 @inject NavigationManager _navigationManager
-
 @inject ITaskService _taskService
 
 @page "/"
@@ -140,7 +138,6 @@
         </div>
     </div>
 </div>
-
 
 @code {
     DateOnly todayDate = DateOnly.FromDateTime(DateTime.UtcNow);

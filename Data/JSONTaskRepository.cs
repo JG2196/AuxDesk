@@ -40,7 +40,7 @@ namespace AuxDesk.Data
         {
             if (!File.Exists(taskPath))
             {
-                await File.WriteAllTextAsync(taskPath, "[]");
+                File.WriteAllText(taskPath, "[]");
             }
         }
     }
