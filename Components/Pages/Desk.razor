@@ -139,7 +139,7 @@
     <div class="col">
         <div class="p-2">
             <h6><b>Current Task</b></h6>
-            <div class="border border-primary p-3 rounded-3 parent-container" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
+            <div class="border border-primary p-3 rounded-3 parent-container" style="height:85vh;border-color:@TaskBorderCol; background-color:rgba(0, 0, 0, 0.2)">
                 <div class="header-fixed">
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" placeholder="Title..." @bind="@selectedTaskItem.Title" disabled>
@@ -201,6 +201,7 @@
     private int NotStartedTasks;
     private int InProgressTasks;
     private int TotalTasks;
+    private string TaskBorderCol = "#65cf9e !important";
     //
 
     // New task modal fields
@@ -375,9 +376,9 @@
     {
         selectedTaskItem = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
 
-        if (selectedTaskItem.Priority == 1) { selectedPriority = "High"; }
-        else if (selectedTaskItem.Priority == 2) { selectedPriority = "Medium"; }
-        else { selectedPriority = "Low"; }
+        if (selectedTaskItem.Priority == 1) { TaskBorderCol = "red !important"; }
+        else if (selectedTaskItem.Priority == 2) { TaskBorderCol = "yellow !important"; }
+        else { TaskBorderCol = "green !important"; }
 
         if (selectedTaskItem.StartDateTime == null)
         {
