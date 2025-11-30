@@ -15,28 +15,28 @@ namespace AuxDesk.Models
     public class TaskItem : TaskItemData
     {
         //
-        private DateOnly? assignedDate;
+        public DateOnly? AssignedDate { get; set; }
         private string? title;
         public DateTime? EndDateTime { get; private set; } = null;
         public DateTime? StartDateTime { get; private set; } = null;
         public bool IsDone { get; set; } = false;
         public string Notes { get; set; } = string.Empty;
         public bool IsDeleted { get; set; } = false;
-        public DateOnly? AssignedDate
-        {
-            get { return assignedDate; }
-            set
-            {
-                if (value < DateOnly.FromDateTime(DateTime.UtcNow))
-                {
-                    assignedDate = null;
-                }
-                else
-                {
-                    assignedDate = value;
-                }
-            }
-        }
+        //public DateOnly? AssignedDate
+        //{
+        //    get { return assignedDate; }
+        //    set
+        //    {
+        //        if (value < DateOnly.FromDateTime(DateTime.UtcNow))
+        //        {
+        //            assignedDate = null;
+        //        }
+        //        else
+        //        {
+        //            assignedDate = value;
+        //        }
+        //    }
+        //}
         public string? Title
         {
             get { return title; }
@@ -86,7 +86,7 @@ namespace AuxDesk.Models
     }
     public class DeletedTaskItem : TaskItemData
     {
-        public DateOnly? DateDeleted { get; private set; }
+        public DateOnly? DateDeleted { get; set; }
         public void SetDateDeleted()
         {
             DateDeleted = DateOnly.FromDateTime(DateTime.UtcNow);

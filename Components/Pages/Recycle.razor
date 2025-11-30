@@ -1,6 +1,4 @@
 ﻿@using Data;
-@using AuxDeskServices;
-
 @using Models;
 @using Services;
 
@@ -14,8 +12,8 @@
     <div class="col-sm-6">
         <div class="p-2">
             <h6><b>Deleted Tasks</b></h6>
-            <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
-            <div class="row row-cols-2">
+            <div class="border border-primary p-3 rounded-3 parent-container" style="border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
+                <div class="row row-cols-2 content-scrollable">
                     @foreach (TaskItem taskItem in listTaskItems)
             {
                 
@@ -61,18 +59,20 @@
     <div class="col-sm-6">
         <div class="p-2">
             <h6><b>Selected Task</b></h6>
-            <div class="border border-primary p-3 rounded-3" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
-            <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="Title..." value="@selectedTaskItem.Title" disabled>
-                <div class="dropdown">
-                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" disabled>@selectedPriority</button>
+            <div class="border border-primary p-3 rounded-3 parent-container" style="height:85vh;border-color:@TaskBorderCol; background-color:rgba(0, 0, 0, 0.2)">
+                <div class="header-fixed">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Title..." value="@selectedTaskItem.Title" disabled>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" disabled>@selectedPriority</button>
+                    </div>
+                </div>
+                <div class="input-group mb-3  text-center">
+                    <span class="input-group-text" id="inputGroup-sizing-default" disabled>Date</span>
+                    <input type="date" class="form-control" aria-label="Sizing example input" @bind="@selectedTaskItem.AssignedDate" aria-describedby="inputGroup-sizing-default" disabled>
                 </div>
             </div>
-            <div class="input-group mb-3  text-center">
-                <span class="input-group-text" id="inputGroup-sizing-default" disabled>Date</span>
-                    <input type="date" class="form-control" aria-label="Sizing example input" @bind="@selectedTaskItem.AssignedDate" aria-describedby="inputGroup-sizing-default" disabled>
-            </div>
-            <div class="input-group" style="height:60vh">
+            <div class="input-group" style="flex:1">
                     <textarea class="form-control" aria-label="With textarea" placeholder="Notes" disabled>@selectedTaskItem.Notes</textarea>
             </div>
             </div>
@@ -86,6 +86,7 @@
     private List<TaskItem> listAllTaskItems = new();
     private List<TaskItem> listTaskItems = new();
     private TaskItem selectedTaskItem = new();
+    private string TaskBorderCol = "#65cf9e !important";
 
     private bool isDropdownOpenPriorty = false;
     private string selectedPriority = "Medium";
@@ -122,9 +123,9 @@
     {
         selectedTaskItem = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
 
-        if (selectedTaskItem.Priority == 1) { selectedPriority = "High"; }
-        else if (selectedTaskItem.Priority == 2) { selectedPriority = "Medium"; }
-        else { selectedPriority = "Low"; }
+        if (selectedTaskItem.Priority == 1) { TaskBorderCol = "red !important"; }
+        else if (selectedTaskItem.Priority == 2) { TaskBorderCol = "yellow !important"; }
+        else { TaskBorderCol = "green !important"; }
     }
     private async void RestoreTaskItem(string taskGUID)
     {

@@ -19,7 +19,11 @@ namespace AuxDesk.WinUI
             this.InitializeComponent();
         }
 
-        protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+        protected override MauiApp CreateMauiApp()
+        {
+            // Fix CS0029: Await the Task to get MauiApp instance
+            return MauiProgram.CreateMauiApp().GetAwaiter().GetResult();
+        }
     }
 
 }
