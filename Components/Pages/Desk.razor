@@ -12,6 +12,55 @@
 
 <h3>AuxDesk</h3>
 
+<!-- Modal -->
+<div class="modal fade" id="modal_NewTask" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Create task</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" aria-label="Text input with dropdown button" placeholder="Title..." @bind="taskTitle">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownPriority" type="button">
+                            @selectedPriority
+                        </button>
+                        <ul class="dropdown-menu @(isDropdownOpenPriorty ? "show" : "")" style="@(isDropdownOpenPriorty ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
+                            <li><a class="dropdown-item" @onclick="@(() => SelectPriority(1))">High</a></li>
+                            <li><a class="dropdown-item" @onclick="@(() => SelectPriority(2))">Medium</a></li>
+                            <li><a class="dropdown-item" @onclick="@(() => SelectPriority(3))">Low</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="input-group mb-3">
+                    <span class="input-group-text" @bind="taskDate" id="inputGroup-sizing-default">Start Date</span>
+                    <input type="date" class="form-control" aria-label="Sizing example input" @bind="taskDate">
+                </div>
+
+                <div class="input-group" style="min-height:40vh">
+                    <textarea class="form-control" aria-label="With textarea" placeholder="Notes" @bind="taskNotes"></textarea>
+                </div>
+
+                @* <div class="btn-toolbar" role="toolbar" style="margin-top:16px">
+                    <div class="btn-group">
+                        
+                    </div>
+                    <div class="btn-group" style="padding-left:8px">
+                        
+                    </div>
+                </div> *@
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" @onclick="CreateTask">Create</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row gx-3">
     <div class="col">
         <div class="p-2">
@@ -22,7 +71,8 @@
                         <span class="input-group-text" id="inputGroup-sizing-default">Date</span>
                         <input type="date" class="form-control" aria-label="Sizing example input" @onchange="SelectDate" value="@taskDate.ToString("yyyy-MM-dd")" aria-describedby="inputGroup-sizing-default">
                     </div>
-                    <button type="button" class="btn btn-primary mt-2 mb-2" style="width:100%" @onclick="DirectToNewTask"><b>+</b></button>
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-primary mt-2 mb-2" data-bs-toggle="modal" data-bs-target="#modal_NewTask" style="width:100%"><b>+</b></button>
                 </div>
                 <div class="row row-cols-2 content-scrollable">
             @foreach (TaskItem userTask in listTaskItems)
@@ -89,20 +139,10 @@
     <div class="col">
         <div class="p-2">
             <h6><b>Current Task</b></h6>
-            <div class="border border-primary p-3 rounded-3 parent-container" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
+            <div class="border border-primary p-3 rounded-3 parent-container" style="height:85vh;border-color:@TaskBorderCol; background-color:rgba(0, 0, 0, 0.2)">
                 <div class="header-fixed">
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" placeholder="Title..." @bind="@selectedTaskItem.Title" disabled>
-                        <div class="dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownPriority" type="button" disabled>
-                                @selectedPriority
-                            </button>
-                            <ul class="dropdown-menu @(isDropdownOpenPriorty ? "show" : "")" style="@(isDropdownOpenPriorty ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
-                                <li><a class="dropdown-item" @onclick="@(() => SelectPriority(1))">High</a></li>
-                                <li><a class="dropdown-item" @onclick="@(() => SelectPriority(2))">Medium</a></li>
-                                <li><a class="dropdown-item" @onclick="@(() => SelectPriority(3))">Low</a></li>
-                            </ul>
-                        </div>
                     </div>
                     <div class="row">
                         <div class="input-group mb-3 text-center col">
@@ -161,6 +201,12 @@
     private int NotStartedTasks;
     private int InProgressTasks;
     private int TotalTasks;
+    private string TaskBorderCol = "#65cf9e !important";
+    //
+
+    // New task modal fields
+    private string? taskTitle;
+    private string? taskNotes;
     //
 
 
@@ -171,10 +217,10 @@
         TaskMetaData();
     }
 
-    private void DirectToNewTask()
-    {
-        _navigationManager.NavigateTo("/newTask");
-    }
+    // private void DirectToNewTask()
+    // {
+    //     _navigationManager.NavigateTo("/newTask");
+    // }
 
     private void SelectDate(ChangeEventArgs e)
     {
@@ -330,9 +376,9 @@
     {
         selectedTaskItem = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
 
-        if (selectedTaskItem.Priority == 1) { selectedPriority = "High"; }
-        else if (selectedTaskItem.Priority == 2) { selectedPriority = "Medium"; }
-        else { selectedPriority = "Low"; }
+        if (selectedTaskItem.Priority == 1) { TaskBorderCol = "red !important"; }
+        else if (selectedTaskItem.Priority == 2) { TaskBorderCol = "yellow !important"; }
+        else { TaskBorderCol = "green !important"; }
 
         if (selectedTaskItem.StartDateTime == null)
         {
@@ -343,5 +389,51 @@
             selectedStatus = "In progress";
         }
         else { selectedStatus = "Done"; }
+    }
+
+    private async void CreateTask()
+    {
+        TaskItem newTaskItem = new();
+
+        newTaskItem.TaskGUID = Guid.NewGuid().ToString();
+        newTaskItem.Title = taskTitle;
+        newTaskItem.Notes = taskNotes;
+        newTaskItem.Priority = taskPriority;
+        newTaskItem.AssignedDate = taskDate;
+
+        // Validate on domain layer
+        string validationMessage = string.Empty;
+        bool bInvalid = false;
+        if (string.IsNullOrEmpty(newTaskItem.Title))
+        {
+            validationMessage += "Title is required.";
+            bInvalid = true;
+        }
+        if (newTaskItem.AssignedDate == null)
+        {
+            validationMessage += " Valid date is required.";
+            bInvalid = true;
+        }
+        if (bInvalid)
+        {
+            await App.Current.MainPage.DisplayAlert("Validation Error", validationMessage, "OK");
+            return;
+        }
+
+        if (listAllTaskItems.Count == 0)
+        {
+            listAllTaskItems = await _taskService.GetTaskItemsAsync(null);
+        }
+
+        await _taskService.SaveTaskItemAsync(listAllTaskItems, newTaskItem);
+
+        taskTitle = string.Empty;
+        taskNotes = string.Empty;
+
+        await App.Current.MainPage.DisplayAlert("Task Saved", "Task saved sucessfully", "OK");
+
+        LoadTaskItems();
+        TaskMetaData();
+        StateHasChanged();
     }
 }
