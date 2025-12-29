@@ -1,13 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
-
-using AuxDesk.Services;
+﻿//using AndroidX.Startup;
 using AuxDesk.Data;
+using AuxDesk.Initialisation;
+using AuxDesk.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace AuxDesk
 {
     public static class MauiProgram
     {
-        public static MauiApp CreateMauiApp()
+        public static async Task<MauiApp> CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
             builder
@@ -25,7 +27,13 @@ namespace AuxDesk
 #endif
 
             ConfigureServices(builder.Services);
-            return builder.Build();
+            var app = builder.Build();
+
+            // Initialize on startup
+            var initialiser = app.Services.GetRequiredService<AppInitialiser>();
+            await initialiser.InitialiseAsync();
+
+            return app;
         }
 
         private static void ConfigureServices(IServiceCollection services)
@@ -33,6 +41,7 @@ namespace AuxDesk
             services.AddSingleton<ITaskRepository, JSONTaskRepository>();
             services.AddSingleton<IRecycleRepository, JSONRecycleRepository>();
             services.AddSingleton<ITaskService, TaskService>();
+            services.AddSingleton<AppInitialiser>();
         }
     }
 }

@@ -18,7 +18,10 @@ namespace AuxDesk.Data
         {
             List<TaskItem> listTaskItems = new List<TaskItem>();
 
-            if (!File.Exists(taskPath)) { return listTaskItems; }
+            if (!File.Exists(taskPath)) {
+                //await CreateFileAsync();
+                return listTaskItems; 
+            }
 
             var contents = File.ReadAllText(taskPath);
 
@@ -32,6 +35,13 @@ namespace AuxDesk.Data
         {
             var contents = JsonSerializer.Serialize(listTaskItems);
             File.WriteAllText(taskPath, contents);
+        }
+        public async Task CreateFileAsync()
+        {
+            if (!File.Exists(taskPath))
+            {
+                File.WriteAllText(taskPath, "[]");
+            }
         }
     }
 }
