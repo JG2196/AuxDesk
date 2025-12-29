@@ -142,9 +142,9 @@
             <div class="border border-primary p-3 rounded-3 parent-container" style="height:85vh;border-color:@TaskBorderCol; background-color:rgba(0, 0, 0, 0.2)">
                 <div class="header-fixed">
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Title..." @bind="@selectedTaskItem.Title">
+                        <input type="text" class="form-control" placeholder="Title..." @bind="@selectedTaskItem.Title" disabled="@disableElement">
                         <div class="dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownPriority" type="button">
+                            <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownPriority" type="button" disabled="@disableElement">
                                 @selectedPriority
                             </button>
                             <ul class="dropdown-menu @(isDropdownOpenPriorty ? "show" : "")" style="@(isDropdownOpenPriorty ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
@@ -159,23 +159,23 @@
                             <span class="input-group-text" id="inputGroup-sizing-default">Date</span>
                             @if (selectedTaskItem.TaskGUID != "")
                             {
-                                <input type="date" class="form-control" aria-label="Sizing example input" @bind="@selectedTaskItem.AssignedDate" aria-describedby="inputGroup-sizing-default">
+                                <input type="date" class="form-control" aria-label="Sizing example input" @bind="@selectedTaskItem.AssignedDate" aria-describedby="inputGroup-sizing-default" disabled="@disableElement">
                             }
                             else
                             {
-                                <input type="date" class="form-control" aria-label="Sizing example input" value="@todayDate.ToString("yyyy-MM-dd")" aria-describedby="inputGroup-sizing-default" disabled>
+                                <input type="date" class="form-control" aria-label="Sizing example input" value="@todayDate.ToString("yyyy-MM-dd")" aria-describedby="inputGroup-sizing-default" disabled="@disableElement">
                             }
                         </div>
                     </div>
                     <div class="row">
                         <div class="col">
-                        <button type="button" class="btn btn-danger">Delete</button>
-                            <button type="button" class="btn btn-primary" @onclick="UpdateTaskItem">Save</button>
+                            <button type="button" class="btn btn-danger" @onclick="() => DeleteSelectedTaskItem(selectedTaskItem.TaskGUID)" disabled="@disableElement">Delete</button>
+                            <button type="button" class="btn btn-primary" @onclick="UpdateTaskItem" disabled="@disableElement">Save</button>
                         </div>
                         
                         <div class="col">
                             <div class="dropdown float-end">
-                                <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownStatus" type="button" style="width: 116.5px">
+                                <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownStatus" type="button" style="width: 116.5px" disabled="@disableElement">
                                     @selectedStatus
                                 </button>
                                 <ul class="dropdown-menu @(isDropdownOpenStatus ? "show" : "")" style="@(isDropdownOpenStatus ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
@@ -189,7 +189,7 @@
                     </div>
                 </div>
                 <div class="input-group mt-3" style="flex:1;">
-                    <textarea class="form-control" aria-label="With textarea" @bind="@selectedTaskItem.Notes" placeholder="Notes"></textarea>
+                    <textarea class="form-control" aria-label="With textarea" @bind="@selectedTaskItem.Notes" placeholder="Notes" disabled="@disableElement"></textarea>
                 </div>
             </div>
         </div>
@@ -209,6 +209,8 @@
     private bool isDropdownOpenStatus = false;
     private string selectedStatus = "Not started";
     private int taskStatus = 1;
+
+    private bool disableElement = true;
 
     //
     private List<TaskItem> listAllTaskItems = new();
@@ -317,6 +319,12 @@
         }
     }
 
+    private void DeleteSelectedTaskItem(string taskGUID)
+    {
+        DeleteTaskItem(taskGUID);
+
+    }
+
     private async void DeleteTaskItem(string taskGUID)
     {
         if (listAllTaskItems.Count() == 0)
@@ -369,6 +377,8 @@
             selectedStatus = "In progress";
         }
         else { selectedStatus = "Done"; }
+
+        disableElement = false;
     }
 
     private async void CreateTask()
@@ -485,6 +495,10 @@
         }
     }
 
+    private void ResetSelectedTask()
+    {
+        
+    }
     private void SetTaskBorderCol(int priority)
     {
         switch (priority)
