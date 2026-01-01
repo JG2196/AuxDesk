@@ -229,12 +229,6 @@
     private string? taskNotes;
     //
 
-    // Autosave
-    private System.Threading.Timer? debounceTimer;
-    private bool isSaving = false;
-    //
-
-
     protected override void OnInitialized()
     {
         taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -422,19 +416,6 @@
         StateHasChanged();
     }
 
-    // private void OnTaskChanged()
-    // {
-    //     debounceTimer?.Dispose();
-
-    //     debounceTimer = new System.Threading.Timer(async _ =>
-    //     {
-    //         await InvokeAsync(async () =>
-    //         {
-    //             await UpdateTaskItem();
-    //         });
-    //     }, null, 500, Timeout.Infinite);
-    // }
-
     private async Task UpdateTaskItem()
     {
 
@@ -499,6 +480,7 @@
     {
         
     }
+
     private void SetTaskBorderCol(int priority)
     {
         switch (priority)
@@ -514,9 +496,4 @@
                 break;
         }
     }
-
-    // public void Dispose()
-    // {
-    //     debounceTimer?.Dispose();
-    // }
 }
