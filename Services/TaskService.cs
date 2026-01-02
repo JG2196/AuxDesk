@@ -81,11 +81,6 @@ namespace AuxDesk.Services
         }
         public async Task SaveTaskItemAsync(List<TaskItem> listTaskItems, TaskItem taskItem)
         {
-            if (listTaskItems.Count == 0)
-            {
-                listTaskItems = await GetTaskItemsAsync(null);
-            }
-
             listTaskItems.Add(taskItem);
             await _taskRepository.SaveAsync(listTaskItems);
         }
