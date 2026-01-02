@@ -1,0 +1,57 @@
+@using System.Timers;
+
+@page "/timerdev"
+
+<h3>Timer Dev</h3>
+<br />
+@if (hrs > 0)
+{
+    <p>Timer - @hrs.ToString("D2"):@mins.ToString("D2"):@secs.ToString("D2")</p>
+}
+else
+{
+    <p>Timer - @mins.ToString("D2"):@secs.ToString("D2")</p>
+}
+<button type="button" class="btn" @onclick="StartTimer">Start</button>
+
+@code {
+
+    int mins = 0;
+    int secs = 0;
+    int hrs = 0;
+
+    private void StartTimer()
+    {
+        Timer timer = new Timer(1000);
+
+        // Call the NewTick method every second.
+        timer.Elapsed += NewTick;
+        timer.Enabled = true;
+    }
+
+    private void NewTick(Object source, ElapsedEventArgs e)
+    {
+        bool bUpdateDisplay = false;
+
+        if (secs < 59)
+        {
+            bUpdateDisplay = true;
+            secs += 1;
+        }
+        else
+        {
+            bUpdateDisplay = true;
+            secs = 0;
+            mins += 1;
+        }
+
+        if (mins > 59)
+        {
+            secs = 0;
+            mins = 0;
+            hrs += 1;
+        }
+
+        if (bUpdateDisplay) { InvokeAsync(StateHasChanged); }
+    }
+}
