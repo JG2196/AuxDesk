@@ -22,46 +22,68 @@ namespace AuxDesk.Initialisation
 
         public async Task InitialiseAsync()
         {
-            // 1. Check if files exist, if not create files
-            await ValidateExistingFiles();
-            
-            // 2. Clean up recycle bin
-            await CleanupRecycleBinAsync();
+            try
+            {
+                // 1. Check if files exist, if not create files
+                await ValidateExistingFiles();
+
+                // 2. Clean up recycle bin
+                await CleanupRecycleBinAsync();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"InitialiseAsync ex: {ex.Message}");
+            }
         }
+        
         private async Task ValidateExistingFiles()
         {
-            await _taskRepository.CreateFileAsync();
-            await _recycleRepository.CreateFileAsync();
+            try
+            {
+                await _taskRepository.CreateFileAsync();
+                await _recycleRepository.CreateFileAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ValidateExistingFiles ex: {ex.Message}");
+            }
         }
         private async Task CleanupRecycleBinAsync()
         {
-            // Get deleted tasks
-            List<DeletedTaskItem> listRecycledTaskItems = await _recycleRepository.GetAllAsync();
-
-            // If empty return
-            if (listRecycledTaskItems.Count == 0) { return; }
-            
-            // Else get all tasks
-            List<TaskItem> listTaskItems = await _taskRepository.GetAllAsync();
-            
-            // Set expire date (14 days before current date)
-            DateOnly expireDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-14));
-
-            // Filter deleted tasks to get expired tasks
-            List<DeletedTaskItem> listExpiredTasks = listRecycledTaskItems.Where(task => task.DateDeleted < expireDate).ToList();
-            if (listExpiredTasks.Count == 0) { return; }
-
-            // Remove expired tasks from all tasks
-            // Remove expired tasks from deleted tasks
-            foreach (DeletedTaskItem expiredTask in listExpiredTasks)
+            try
             {
-                listTaskItems.RemoveAll(task => task.TaskGUID == expiredTask.TaskGUID);
-                listRecycledTaskItems.RemoveAll(task => task.TaskGUID == expiredTask.TaskGUID);
-            }
+                // Get deleted tasks
+                List<DeletedTaskItem> listRecycledTaskItems = await _recycleRepository.GetAllAsync();
 
-            // Save files
-            await _taskRepository.SaveAsync(listTaskItems);
-            await _recycleRepository.SaveAsync(listRecycledTaskItems);
+                // If empty return
+                if (listRecycledTaskItems.Count == 0) { return; }
+
+                // Else get all tasks
+                List<TaskItem> listTaskItems = await _taskRepository.GetAllAsync();
+
+                // Set expire date (14 days before current date)
+                DateOnly expireDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-14));
+
+                // Filter deleted tasks to get expired tasks
+                List<DeletedTaskItem> listExpiredTasks = listRecycledTaskItems.Where(task => task.DateDeleted < expireDate).ToList();
+                if (listExpiredTasks.Count == 0) { return; }
+
+                // Remove expired tasks from all tasks
+                // Remove expired tasks from deleted tasks
+                foreach (DeletedTaskItem expiredTask in listExpiredTasks)
+                {
+                    listTaskItems.RemoveAll(task => task.TaskGUID == expiredTask.TaskGUID);
+                    listRecycledTaskItems.RemoveAll(task => task.TaskGUID == expiredTask.TaskGUID);
+                }
+
+                // Save files
+                await _taskRepository.SaveAsync(listTaskItems);
+                await _recycleRepository.SaveAsync(listRecycledTaskItems);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"CleanupRecycleBinAsync ex: {ex.Message}");
+            }
         }
     }
 }
