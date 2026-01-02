@@ -29,9 +29,13 @@ namespace AuxDesk
             ConfigureServices(builder.Services);
             var app = builder.Build();
 
-            // Initialize on startup
+            // Initialise on startup
             var initialiser = app.Services.GetRequiredService<AppInitialiser>();
             await initialiser.InitialiseAsync();
+
+            // Initialise CRON
+            var cronInitialiser = app.Services.GetRequiredService<CRONInitialiser>();
+            await cronInitialiser.CRONInitialiseAsync();
 
             return app;
         }
@@ -42,6 +46,7 @@ namespace AuxDesk
             services.AddSingleton<IRecycleRepository, JSONRecycleRepository>();
             services.AddSingleton<ITaskService, TaskService>();
             services.AddSingleton<AppInitialiser>();
+            services.AddSingleton<CRONInitialiser>();
         }
     }
 }
