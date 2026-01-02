@@ -405,6 +405,11 @@
     {
         try
         {
+            if (listAllTaskItems.Count() == 0)
+            {
+                listAllTaskItems = await _taskService.GetTaskItemsAsync(null);
+            }
+
             TaskItem newTaskItem = new();
 
             newTaskItem.TaskGUID = Guid.NewGuid().ToString();
