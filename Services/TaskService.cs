@@ -65,12 +65,27 @@ namespace AuxDesk.Services
         {
             await _taskRepository.SaveAsync(listTaskItems);
         }
+        public async Task UpdateTaskItemAsync(List<TaskItem> listTaskItems, TaskItem taskItem)
+        {
+            if (listTaskItems.Count == 0)
+            {
+                listTaskItems = await GetTaskItemsAsync(null);
+            }
+
+            listTaskItems.RemoveAll(t => t.TaskGUID == taskItem.TaskGUID);
+            await SaveTaskItemAsync(listTaskItems, taskItem);
+        }
         public async Task UpdateDeletedTaskItemsAsync(List<DeletedTaskItem> listDeletedTaskItems)
         {
             await _recycleRepository.SaveAsync(listDeletedTaskItems);
         }
         public async Task SaveTaskItemAsync(List<TaskItem> listTaskItems, TaskItem taskItem)
         {
+            if (listTaskItems.Count == 0)
+            {
+                listTaskItems = await GetTaskItemsAsync(null);
+            }
+
             listTaskItems.Add(taskItem);
             await _taskRepository.SaveAsync(listTaskItems);
         }

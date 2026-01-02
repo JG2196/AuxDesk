@@ -12,6 +12,46 @@
 
 <h3>AuxDesk</h3>
 
+<!-- Modal -->
+<div class="modal fade" id="modal_NewTask" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Create task</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" aria-label="Text input with dropdown button" placeholder="Title..." @bind="taskTitle">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownPriority" type="button">
+                            @selectedPriority
+                        </button>
+                        <ul class="dropdown-menu @(bPriorityMenuOpen ? "show" : "")" style="@(bPriorityMenuOpen ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
+                            <li><a class="dropdown-item" @onclick="@(() => SelectPriority(1))">High</a></li>
+                            <li><a class="dropdown-item" @onclick="@(() => SelectPriority(2))">Medium</a></li>
+                            <li><a class="dropdown-item" @onclick="@(() => SelectPriority(3))">Low</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="input-group mb-3">
+                    <span class="input-group-text" @bind="taskDate" id="inputGroup-sizing-default">Start Date</span>
+                    <input type="date" class="form-control" aria-label="Sizing example input" @bind="taskDate">
+                </div>
+
+                <div class="input-group" style="min-height:40vh">
+                    <textarea class="form-control" aria-label="With textarea" placeholder="Notes" @bind="taskNotes"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" @onclick="CreateTask">Create</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row gx-3">
     <div class="col">
         <div class="p-2">
@@ -22,7 +62,8 @@
                         <span class="input-group-text" id="inputGroup-sizing-default">Date</span>
                         <input type="date" class="form-control" aria-label="Sizing example input" @onchange="SelectDate" value="@taskDate.ToString("yyyy-MM-dd")" aria-describedby="inputGroup-sizing-default">
                     </div>
-                    <button type="button" class="btn btn-primary mt-2 mb-2" style="width:100%" @onclick="DirectToNewTask"><b>+</b></button>
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-primary mt-2 mb-2" data-bs-toggle="modal" data-bs-target="#modal_NewTask" style="width:100%"><b>+</b></button>
                 </div>
                 <div class="row row-cols-2 content-scrollable">
             @foreach (TaskItem userTask in listTaskItems)
@@ -65,7 +106,7 @@
                                 <div class="col">
                                     <div class="btn-toolbar" role="toolbar">
                                         <div class="btn-group" style="padding-left:8px">
-                                                    <button type="button" class="btn btn-danger" @onclick="() => DeleteTaskItem(userTask.TaskGUID)">Delete</button>
+                                                <button type="button" class="btn btn-danger" @onclick="() => DeleteTaskItem(userTask.TaskGUID)">Delete</button>
                                         </div>
                                     </div>
                                 </div>
@@ -76,10 +117,10 @@
             }
                 </div>
                 <div class="card footer-fixed" @onclick="ShowProgress" style="margin-top:8px">
-                <div class="card-header"><b>Completed: @CompletedTasks/@TotalTasks</b></div>
-                    <div class="card-body" style="display:@ProgressDisplay">
-                        <h6>Not started: @NotStartedTasks</h6>
-                        <h6>In progress: @InProgressTasks</h6>
+                <div class="card-header"><b>Completed: @tasksCompleted/@TotalTasks</b></div>
+                    <div class="card-body" style="display:@progressDisplay">
+                        <h6>Not started: @tasksNotStarted</h6>
+                        <h6>In progress: @tasksInProgress</h6>
                     </div>
                 </div>
             </div>
@@ -89,15 +130,15 @@
     <div class="col">
         <div class="p-2">
             <h6><b>Current Task</b></h6>
-            <div class="border border-primary p-3 rounded-3 parent-container" style="height:85vh;border-color:#65cf9e !important; background-color:rgba(0, 0, 0, 0.2)">
+            <div class="border border-primary p-3 rounded-3 parent-container" style="height:85vh;border-color:@TaskBorderCol; background-color:rgba(0, 0, 0, 0.2)">
                 <div class="header-fixed">
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Title..." @bind="@selectedTaskItem.Title" disabled>
+                        <input type="text" class="form-control" placeholder="Title..." @bind="@selectedTaskItem.Title" disabled="@bElementDisabled">
                         <div class="dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownPriority" type="button" disabled>
+                            <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownPriority" type="button" disabled="@bElementDisabled">
                                 @selectedPriority
                             </button>
-                            <ul class="dropdown-menu @(isDropdownOpenPriorty ? "show" : "")" style="@(isDropdownOpenPriorty ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
+                            <ul class="dropdown-menu @(bPriorityMenuOpen ? "show" : "")" style="@(bPriorityMenuOpen ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
                                 <li><a class="dropdown-item" @onclick="@(() => SelectPriority(1))">High</a></li>
                                 <li><a class="dropdown-item" @onclick="@(() => SelectPriority(2))">Medium</a></li>
                                 <li><a class="dropdown-item" @onclick="@(() => SelectPriority(3))">Low</a></li>
@@ -109,30 +150,37 @@
                             <span class="input-group-text" id="inputGroup-sizing-default">Date</span>
                             @if (selectedTaskItem.TaskGUID != "")
                             {
-                                <input type="date" class="form-control" aria-label="Sizing example input" @bind="@selectedTaskItem.AssignedDate" aria-describedby="inputGroup-sizing-default" disabled>
+                                <input type="date" class="form-control" aria-label="Sizing example input" @bind="@selectedTaskItem.AssignedDate" aria-describedby="inputGroup-sizing-default" disabled="@bElementDisabled">
                             }
                             else
                             {
-                                <input type="date" class="form-control" aria-label="Sizing example input" value="@todayDate.ToString("yyyy-MM-dd")" aria-describedby="inputGroup-sizing-default" disabled>
+                                <input type="date" class="form-control" aria-label="Sizing example input" value="@todayDate.ToString("yyyy-MM-dd")" aria-describedby="inputGroup-sizing-default" disabled="@bElementDisabled">
                             }
                         </div>
                     </div>
-                    <div class="col">
-                        <button type="button" class="btn btn-danger float-end ms-3">Delete</button>
-                        <div class="dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle float-end" @onclick="ToggleDropdownStatus" type="button">
-                                @selectedStatus
-                            </button>
-                            <ul class="dropdown-menu @(isDropdownOpenStatus ? "show" : "")" style="@(isDropdownOpenStatus ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
-                                <li><a class="dropdown-item" @onclick="@(() => SelectStatus(1))">Not started</a></li>
-                                <li><a class="dropdown-item" @onclick="@(() => SelectStatus(2))">In progress</a></li>
-                                <li><a class="dropdown-item" @onclick="@(() => SelectStatus(3))">Done</a></li>
-                            </ul>
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn btn-danger" @onclick="() => DeleteSelectedTaskItem(selectedTaskItem.TaskGUID)" disabled="@bElementDisabled">Delete</button>
+                            <button type="button" class="btn btn-primary" @onclick="UpdateTaskItem" disabled="@bElementDisabled">Save</button>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="dropdown float-end">
+                                <button class="btn btn-outline-secondary dropdown-toggle" @onclick="ToggleDropdownStatus" type="button" style="width: 116.5px" disabled="@bElementDisabled">
+                                    @selectedStatus
+                                </button>
+                                <ul class="dropdown-menu @(bStatusMenuOpen ? "show" : "")" style="@(bStatusMenuOpen ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
+                                    <li><a class="dropdown-item" @onclick="@(() => SelectStatus(1))">Not started</a></li>
+                                    <li><a class="dropdown-item" @onclick="@(() => SelectStatus(2))">In progress</a></li>
+                                    <li><a class="dropdown-item" @onclick="@(() => SelectStatus(3))">Done</a></li>
+                                </ul>
+                            
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="input-group mt-3" style="flex:1;">
-                    <textarea class="form-control" aria-label="With textarea" @bind="@selectedTaskItem.Notes" placeholder="Notes" disabled></textarea>
+                    <textarea class="form-control" aria-label="With textarea" @bind="@selectedTaskItem.Notes" placeholder="Notes" disabled="@bElementDisabled"></textarea>
                 </div>
             </div>
         </div>
@@ -142,38 +190,41 @@
 @code {
     DateOnly todayDate = DateOnly.FromDateTime(DateTime.UtcNow);
     DateOnly taskDate;
-    public string ProgressDisplay = "none";
-    public bool BProgressExpanded = false;
+    public string progressDisplay = "none";
+    public bool bProgressExpanded = false;
 
-    private bool isDropdownOpenPriorty = false;
+    private bool bPriorityMenuOpen = false;
     private string selectedPriority = "Medium";
     private int taskPriority = 2;
 
-    private bool isDropdownOpenStatus = false;
+    private bool bStatusMenuOpen = false;
     private string selectedStatus = "Not started";
+    private int taskStatus = 1;
+
+    private bool bElementDisabled = true;
 
     //
     private List<TaskItem> listAllTaskItems = new();
     private List<TaskItem> listTaskItems = new();
     private List<DeletedTaskItem> listDeletedTaskItems = new();
     private TaskItem selectedTaskItem = new ();
-    private int CompletedTasks;
-    private int NotStartedTasks;
-    private int InProgressTasks;
+    private int tasksCompleted;
+    private int tasksNotStarted;
+    private int tasksInProgress;
     private int TotalTasks;
+    private string TaskBorderCol = "#65cf9e !important";
     //
 
+    // New task modal fields
+    private string? taskTitle;
+    private string? taskNotes;
+    //
 
     protected override void OnInitialized()
     {
         taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
         LoadTaskItems();
         TaskMetaData();
-    }
-
-    private void DirectToNewTask()
-    {
-        _navigationManager.NavigateTo("/newTask");
     }
 
     private void SelectDate(ChangeEventArgs e)
@@ -188,141 +239,145 @@
 
     private void ToggleDropdownPriority()
     {
-        isDropdownOpenPriorty = !isDropdownOpenPriorty;
+        bPriorityMenuOpen = !bPriorityMenuOpen;
     }
 
     private void SelectPriority(int priority)
     {
         taskPriority = priority;
-        isDropdownOpenPriorty = false;
+        bPriorityMenuOpen = false;
         selectedPriority = "Low";
 
         if (priority == 1) { selectedPriority = "High"; }
         else if (priority == 2) { selectedPriority = "Medium"; }
+
+        SetTaskBorderCol(priority);
     }
 
     private void ToggleDropdownStatus()
     {
-        isDropdownOpenStatus = !isDropdownOpenStatus;
+        bStatusMenuOpen = !bStatusMenuOpen;
+    }
+
+    private void SelectStatus(int status)
+    {
+        taskStatus = status;
+        bStatusMenuOpen = false;
+        selectedStatus = "Done";
+
+        if (status == 1) { selectedStatus = "Not started"; }
+        else if (status == 2) { selectedStatus = "In progress"; }
     }
 
     private void TaskMetaData()
     {
-        NotStartedTasks = 0;
-        InProgressTasks = 0;
-        CompletedTasks = 0;
+        tasksNotStarted = 0;
+        tasksInProgress = 0;
+        tasksCompleted = 0;
 
         foreach (TaskItem taskItem in listTaskItems)
         {
             if (taskItem.NotStarted())
             {
-                NotStartedTasks++;
+                tasksNotStarted++;
             }
             else if (taskItem.InProgress())
             {
-                InProgressTasks++;
+                tasksInProgress++;
             }
             else if (taskItem.IsDone)
             {
-                CompletedTasks++;
+                tasksCompleted++;
             }
         }
         TotalTasks = listTaskItems.Count();
     }
-
-    private void SelectStatus(int status)
+    private void ShowProgress()
     {
-        // if (selectedTask.TaskGUID == "")
-        // {
-        //     return;
-        // }
+        if (bProgressExpanded)
+        {
+            progressDisplay = "none";
+            bProgressExpanded = false;
+        }
+        else
+        {
+            progressDisplay = "block";
+            bProgressExpanded = true;
+        }
+    }
 
-        // DateTime time = DateTime.UtcNow;
-        // List<UserTask> listUserTasks = _auxDeskServices.GetUserTasks();
-
-        // UserTask editTask = listUserTasks.FirstOrDefault(userTask => userTask.TaskGUID == selectedTask.TaskGUID);
-
-        // if (status == 1)
-        // {
-        //     editTask.StartDateTime = null;
-        //     editTask.EndDateTime = null;
-        //     editTask.IsDone = false;
-        // }
-        // else if (status == 2)
-        // {
-        //     if (selectedTask.StartDateTime == null)
-        //     {
-        //         editTask.StartDateTime = time;
-        //     }
-
-        //     editTask.EndDateTime = null;
-        //     editTask.IsDone = false;
-        // }
-        // else
-        // {
-        //     if (selectedTask.StartDateTime == null)
-        //     {
-        //         editTask.StartDateTime = time;
-        //     }
-        //     editTask.EndDateTime = time;
-        //     editTask.IsDone = true;
-        // }
-
-        // _auxDeskServices.Save(listUserTasks, null, false);
-        // LoadTaskItems();
-
-        // isDropdownOpenStatus = false;
-        // selectedStatus = "Done";
-
-        // if (status == 1) { selectedStatus = "Not started"; }
-        // else if (status == 2) { selectedStatus = "In progress"; }
-
+    private void SetTaskBorderCol(int priority)
+    {
+        switch (priority)
+        {
+            case 1:
+                TaskBorderCol = "red !important";
+                break;
+            case 2:
+                TaskBorderCol = "yellow !important";
+                break;
+            case 3:
+                TaskBorderCol = "green !important";
+                break;
+        }
     }
 
     private async void LoadTaskItems()
     {
-        listTaskItems = await _taskService.GetTaskItemsAsync(taskDate);
-        listTaskItems = listTaskItems.Where(t => !t.IsDeleted).ToList();
-
-        if (listTaskItems == null || listTaskItems.Count == 0)
+        try
         {
-            return;
+            listTaskItems = await _taskService.GetTaskItemsAsync(taskDate);
+            listTaskItems = listTaskItems.Where(t => !t.IsDeleted).ToList();
+
+            if (listTaskItems == null || listTaskItems.Count == 0)
+            {
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"LoadTaskItems ex: {ex.Message}");
+        }
+    }
+
+    private void DeleteSelectedTaskItem(string taskGUID)
+    {
+        try
+        {
+            DeleteTaskItem(taskGUID);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"DeleteSelectedTaskItem ex: {ex.Message}");
         }
     }
 
     private async void DeleteTaskItem(string taskGUID)
     {
-        if (listAllTaskItems.Count() == 0)
+        try
         {
-            listAllTaskItems = await _taskService.GetTaskItemsAsync(null);
+            if (listAllTaskItems.Count() == 0)
+            {
+                listAllTaskItems = await _taskService.GetTaskItemsAsync(null);
+            }
+
+            TaskItem itemToDelete = await _taskService.GetTaskItemAsync(listAllTaskItems, taskGUID);
+            itemToDelete.IsDeleted = true;
+
+            if (listDeletedTaskItems.Count == 0)
+            {
+                listDeletedTaskItems = await _taskService.GetDeletedTaskItemsAsync();
+            }
+
+            await _taskService.DeleteTaskItemAsync(listDeletedTaskItems, itemToDelete);
+            await _taskService.UpdateTaskItemsAsync(listAllTaskItems);
+
+            LoadTaskItems();
+            TaskMetaData();
         }
-
-        TaskItem itemToDelete = await _taskService.GetTaskItemAsync(listAllTaskItems, taskGUID);
-        itemToDelete.IsDeleted = true;
-
-        if (listDeletedTaskItems.Count == 0)
+        catch (Exception ex)
         {
-            listDeletedTaskItems = await _taskService.GetDeletedTaskItemsAsync();
-        }
-
-        await _taskService.DeleteTaskItemAsync(listDeletedTaskItems, itemToDelete);
-        await _taskService.UpdateTaskItemsAsync(listAllTaskItems);
-
-        LoadTaskItems();
-        TaskMetaData();
-    }
-
-    private void ShowProgress()
-    {
-        if (BProgressExpanded)
-        {
-            ProgressDisplay = "none";
-            BProgressExpanded = false;
-        }
-        else
-        {
-            ProgressDisplay = "block";
-            BProgressExpanded = true;
+            Console.WriteLine($"DeleteTaskItem ex: {ex.Message}");
         }
     }
 
@@ -330,9 +385,8 @@
     {
         selectedTaskItem = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
 
-        if (selectedTaskItem.Priority == 1) { selectedPriority = "High"; }
-        else if (selectedTaskItem.Priority == 2) { selectedPriority = "Medium"; }
-        else { selectedPriority = "Low"; }
+        SelectPriority(selectedTaskItem.Priority);
+        SetTaskBorderCol(selectedTaskItem.Priority);
 
         if (selectedTaskItem.StartDateTime == null)
         {
@@ -343,5 +397,133 @@
             selectedStatus = "In progress";
         }
         else { selectedStatus = "Done"; }
+
+        bElementDisabled = false;
     }
+
+    private async void CreateTask()
+    {
+        try
+        {
+            TaskItem newTaskItem = new();
+
+            newTaskItem.TaskGUID = Guid.NewGuid().ToString();
+            newTaskItem.Title = taskTitle;
+            newTaskItem.Notes = taskNotes;
+            newTaskItem.Priority = taskPriority;
+            newTaskItem.AssignedDate = taskDate;
+
+            // Validate on domain layer
+            string validationMessage = string.Empty;
+            bool bInvalid = false;
+            if (string.IsNullOrEmpty(newTaskItem.Title))
+            {
+                validationMessage += "Title is required.";
+                bInvalid = true;
+            }
+            if (newTaskItem.AssignedDate == null)
+            {
+                validationMessage += " Valid date is required.";
+                bInvalid = true;
+            }
+            if (bInvalid)
+            {
+                await App.Current.MainPage.DisplayAlert("Validation Error", validationMessage, "OK");
+                return;
+            }
+
+            await _taskService.SaveTaskItemAsync(listAllTaskItems, newTaskItem);
+
+            taskTitle = string.Empty;
+            taskNotes = string.Empty;
+
+            await App.Current.MainPage.DisplayAlert("Task Saved", "Task saved sucessfully", "OK");
+
+            LoadTaskItems();
+            TaskMetaData();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"CreateTask ex: {ex.Message}");
+        }
+    }
+
+    private async Task UpdateTaskItem()
+    {
+        try
+        {
+            selectedTaskItem.Priority = taskPriority;
+            SetTaskStatus(taskStatus);
+            TaskItem updateItem = selectedTaskItem;
+
+            try
+            {
+                await _taskService.UpdateTaskItemAsync(listAllTaskItems, updateItem);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                LoadTaskItems();
+                TaskMetaData();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"UpdateTaskItem ex: {ex.Message}");
+        }
+    }
+
+    private void SetTaskStatus(int status)
+    {
+        try
+        {
+            switch (status)
+            {
+                case 1:
+                    if (!selectedTaskItem.NotStarted())
+                    {
+                        selectedTaskItem.IsDone = false;
+                        selectedTaskItem.SetStartDateTime(null);
+                        selectedTaskItem.SetEndDateTime(null);
+                    }
+                    break;
+                case 2:
+                    if (selectedTaskItem.IsDone)
+                    {
+                        selectedTaskItem.SetEndDateTime(null);
+                        selectedTaskItem.IsDone = false;
+                    }
+                    else if (!selectedTaskItem.InProgress())
+                    {
+                        selectedTaskItem.SetStartDateTime(DateTime.UtcNow);
+                    }
+                    break;
+                case 3:
+                    if (!selectedTaskItem.InProgress())
+                    {
+                        selectedTaskItem.SetStartDateTime(DateTime.UtcNow);
+                    }
+                    if (!selectedTaskItem.IsDone)
+                    {
+                        selectedTaskItem.SetEndDateTime(DateTime.UtcNow);
+                        selectedTaskItem.IsDone = true;
+                    }
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"UpdateTaskItem ex: {ex.Message}");
+        }
+    }
+
+    // private void ResetSelectedTask()
+    // {
+        
+    // }
 }
