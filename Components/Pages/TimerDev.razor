@@ -1,57 +1,175 @@
 @using System.Timers;
+@using Microsoft.Toolkit.Uwp.Notifications;
 
 @page "/timerdev"
 
 <h3>Timer Dev</h3>
 <br />
-@if (hrs > 0)
-{
-    <p>Timer - @hrs.ToString("D2"):@mins.ToString("D2"):@secs.ToString("D2")</p>
-}
-else
-{
-    <p>Timer - @mins.ToString("D2"):@secs.ToString("D2")</p>
-}
-<button type="button" class="btn" @onclick="StartTimer">Start</button>
+<input type="radio" id="dur_15" name="duration" @onclick="@(() => SelectDuration(0))" disabled="@bElementDisabled" checked>
+<label for="dur_15">15 mins</label><br>
+<input type="radio" id="dur_30" name="duration" @onclick="@(() => SelectDuration(1))" disabled="@bElementDisabled">
+<label for="dur_30">30 mins</label><br>
+<input type="radio" id="dur_1" name="duration" @onclick="@(() => SelectDuration(2))" disabled="@bElementDisabled">
+<label for="dur_1">1 hr</label><br>
+<p>Timer - @countdown_Hrs.ToString("D2"):@countdown_Mins.ToString("D2"):@countdown_Secs.ToString("D2")</p>
+
+<button type="button" class="btn" @onclick="StartTimer">Start/Stop</button>
+<button type="button" class="btn" @onclick="ResetTimer">Reset</button>
 
 @code {
 
-    int mins = 0;
-    int secs = 0;
-    int hrs = 0;
+    Timer timer = new Timer();
+
+    int selectedDuration = 0;
+
+    ///
+    // For storing the set duration
+    int setDuration_Hrs;
+    int setDuration_Mins;
+    int setDuration_Secs;
+
+    // For countdown display
+    int countdown_Hrs;
+    int countdown_Mins;
+    int countdown_Secs;
+
+    bool bCustomDurationSet = false;
+    bool bTimerRunning = false;
+    bool bTimerReset = false;
+    ///
+
+
+
+    private bool bElementDisabled = false;
+
+    protected override void OnInitialized()
+    {
+        SelectDuration(selectedDuration);
+    }
 
     private void StartTimer()
     {
-        Timer timer = new Timer(1000);
+        try
+        {
+            if (timer.Enabled)
+            {
+                timer.Stop();
+                bElementDisabled = false;
+                return;
+            }
 
-        // Call the NewTick method every second.
-        timer.Elapsed += NewTick;
-        timer.Enabled = true;
+            bElementDisabled = true;
+
+            timer = new Timer(1000);
+
+            // Call the NewTick method every second.
+            timer.Elapsed += NewTick;
+            timer.Enabled = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"StartTimer ex: {ex.Message}");
+        }
+    }
+
+    private void ResetTimer()
+    {
+        try
+        {
+            timer.Stop();
+            timer.Close();
+            timer.Dispose();
+
+            SelectDuration(selectedDuration);
+            bElementDisabled = false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ResetTimer ex: {ex.Message}");
+        }
     }
 
     private void NewTick(Object source, ElapsedEventArgs e)
     {
         bool bUpdateDisplay = false;
 
-        if (secs < 59)
+        if (countdown_Secs > 0)
         {
             bUpdateDisplay = true;
-            secs += 1;
+            countdown_Secs -= 1;
         }
         else
         {
             bUpdateDisplay = true;
-            secs = 0;
-            mins += 1;
+            countdown_Secs = 59;
+            if (countdown_Hrs > 0 && countdown_Mins == 0)
+            {
+                countdown_Mins = 59;
+            }
+            else
+            {
+                countdown_Mins -= 1;
+            }
+
         }
 
-        if (mins > 59)
+        if (countdown_Hrs > 0 && countdown_Mins == 59 && countdown_Secs == 59)
         {
-            secs = 0;
-            mins = 0;
-            hrs += 1;
+            countdown_Hrs -= 1;
+            bUpdateDisplay = true;
+        }
+
+        if (countdown_Hrs == 0 && countdown_Mins == 0 && countdown_Secs == 0)
+        {
+
+            ResetTimer();
+            DisplayNotification();
         }
 
         if (bUpdateDisplay) { InvokeAsync(StateHasChanged); }
+    }
+
+    private void SelectDuration(int duration)
+    {
+        selectedDuration = duration;
+        setDuration_Secs = 0;
+
+        switch (duration)
+        {
+            case 0:
+                setDuration_Hrs = 0;
+                setDuration_Mins = 1;
+                countdown_Hrs = 0;
+                countdown_Mins = 1;
+                countdown_Secs = 0;
+                break;
+            case 1:
+                setDuration_Hrs = 0;
+                setDuration_Mins = 30;
+                countdown_Hrs = 0;
+                countdown_Mins = 30;
+                countdown_Secs = 0;
+                break;
+            case 2:
+                setDuration_Hrs = 1;
+                setDuration_Mins = 0;
+                countdown_Hrs = 1;
+                countdown_Mins = 0;
+                countdown_Secs = 0;
+                break;
+        }
+    }
+    public void DisplayNotification()
+    {
+        // Requires Microsoft.Toolkit.Uwp.Notifications NuGet package version 7.0 or greater
+            new ToastContentBuilder()
+            //.AddArgument("action", "viewConversation")
+            //.AddArgument("conversationId", 9813)
+            .AddText("Timer done!")
+            .Show(toast =>
+            {
+                toast.ExpirationTime = DateTime.Now.AddDays(1);
+            });
+                //.Show(); // Not seeing the Show() method? Make sure you have version 7.0, and if you're using .NET 6 (or later), then your TFM must be net6.0-windows10.0.17763.0 or greater
     }
 }
