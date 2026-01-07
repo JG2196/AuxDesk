@@ -16,13 +16,25 @@
 <button type="button" class="btn" @onclick="StartTimer">Start/Stop</button>
 <button type="button" class="btn" @onclick="ResetTimer">Reset</button>
 
+<br />
+<br />
+<br />
+<h3>Pomodoro Dev</h3>
+<br />
+@* <p>Pomodoro timer - @countdownPomodoro_Mins.ToString("D2"):@countdownPomodoro_Secs.ToString("D2")</p> *@
+
+<button type="button" class="btn" @onclick="StartTimerPomodoro">Start/Stop</button>
+@* <button type="button" class="btn" @onclick="ResetTimerPomodoro">Reset</button> *@
+
+
 @code {
 
+    ///
+    // Timer
     Timer timer = new Timer();
 
     int selectedDuration = 0;
 
-    ///
     // For storing the set duration
     int setDuration_Hrs;
     int setDuration_Mins;
@@ -36,17 +48,23 @@
     bool bCustomDurationSet = false;
     bool bTimerRunning = false;
     bool bTimerReset = false;
-    ///
-
-
 
     private bool bElementDisabled = false;
+    ///
+
+    ///
+    //Pomodoro
+
+    ///
+
 
     protected override void OnInitialized()
     {
         SelectDuration(selectedDuration);
     }
 
+    ///
+    // Timer Methods
     private void StartTimer()
     {
         try
@@ -110,7 +128,6 @@
             {
                 countdown_Mins -= 1;
             }
-
         }
 
         if (countdown_Hrs > 0 && countdown_Mins == 59 && countdown_Secs == 59)
@@ -123,7 +140,7 @@
         {
 
             ResetTimer();
-            DisplayNotification();
+            DisplayNotification("Timmer done");
         }
 
         if (bUpdateDisplay) { InvokeAsync(StateHasChanged); }
@@ -138,9 +155,9 @@
         {
             case 0:
                 setDuration_Hrs = 0;
-                setDuration_Mins = 1;
+                setDuration_Mins = 15;
                 countdown_Hrs = 0;
-                countdown_Mins = 1;
+                countdown_Mins = 15;
                 countdown_Secs = 0;
                 break;
             case 1:
@@ -159,17 +176,216 @@
                 break;
         }
     }
-    public void DisplayNotification()
+    public void DisplayNotification(string message)
     {
         // Requires Microsoft.Toolkit.Uwp.Notifications NuGet package version 7.0 or greater
-            new ToastContentBuilder()
-            //.AddArgument("action", "viewConversation")
-            //.AddArgument("conversationId", 9813)
-            .AddText("Timer done!")
-            .Show(toast =>
-            {
-                toast.ExpirationTime = DateTime.Now.AddDays(1);
-            });
-                //.Show(); // Not seeing the Show() method? Make sure you have version 7.0, and if you're using .NET 6 (or later), then your TFM must be net6.0-windows10.0.17763.0 or greater
+        new ToastContentBuilder()
+        //.AddArgument("action", "viewConversation")
+        //.AddArgument("conversationId", 9813)
+        .AddText(message)
+        .Show(toast =>
+        {
+            toast.ExpirationTime = DateTime.Now.AddDays(1);
+        });
+        //.Show(); // Not seeing the Show() method? Make sure you have version 7.0, and if you're using .NET 6 (or later), then your TFM must be net6.0-windows10.0.17763.0 or greater
     }
+    ///
+
+    ///
+    // Pomodoro Methods
+    Timer timer_Pomodoro = new Timer();
+
+    int completedCycles = 0;
+    int workDuration_Mins = 10;
+    int shortBreakDuration_Mins = 5;
+    int longBreakDuration_Mins = 15;
+    int currentTimer = 0;
+    bool bOnBreak = false;
+    bool pomodoroStarted = false;
+
+    private void StartTimerPomodoro()
+    {
+        try
+        {
+            // if (timer_Pomodoro.Enabled)
+            // {
+            //     timer_Pomodoro.Stop();
+            //     bElementDisabled = false;
+            //     return;
+            // }
+
+            //bElementDisabled = true;
+            pomodoroStarted = true;
+            currentTimer = workDuration_Mins; 
+
+            timer_Pomodoro = new Timer(1000);
+
+            // Call the NewTickPomodoro method every second.
+            timer_Pomodoro.Elapsed += NewTickPomodoro;
+            timer_Pomodoro.Enabled = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"StartTimerPomodoro ex: {ex.Message}");
+        }
+    }
+
+    private void NewTickPomodoro(Object source, ElapsedEventArgs e)
+    {
+        string message = "";
+
+        if (completedCycles >= 8)
+        {
+            DisplayNotification("Cycles completed");
+            currentTimer = 0;
+            bOnBreak = false;
+            pomodoroStarted = false;
+            completedCycles = 0;
+            timer_Pomodoro.Stop();
+            return;
+        }
+
+            if (currentTimer > 0)
+            {
+                currentTimer--;
+            }
+            else if (currentTimer == 0 && bOnBreak)
+            {
+                bOnBreak = false;
+                currentTimer = workDuration_Mins;
+                message = "Break over! Time to work.";
+                DisplayNotification(message);
+                
+            }
+            else if (currentTimer == 0 && !bOnBreak)
+            {
+                // Timer finished
+                completedCycles++;
+                bOnBreak = true;
+                if (completedCycles % 4 == 0)
+                {
+                    currentTimer = longBreakDuration_Mins;
+                    message = "Work session over! Time for a long break.";
+                }
+                else
+                {
+                    currentTimer = shortBreakDuration_Mins;
+                    message = "Work session over! Time for a short break.";
+                }
+                DisplayNotification(message);
+            }
+            
+        //if (bUpdateDisplay) { InvokeAsync(StateHasChanged); }
+    }
+
+    // // For storing the set duration
+    // int setPomodoroDuration_Mins = 3;
+    // int setSBreakDuration_Mins = 1;
+    // int setLBreakDuration_Mins = 2;
+
+    // // For countdown display
+    // int countdownPomodoro_Mins;
+    // int countdownPomodoro_Secs;
+
+    // int pomodoroCyclesCompleted = 0;
+    // bool bSBreakRunning = false;
+    // bool bLBreakRunning = false;
+
+    // private void StartTimerPomodoro()
+    // {
+    //     try
+    //     {
+    //         if (timer_Pomodoro.Enabled)
+    //         {
+    //             timer_Pomodoro.Stop();
+    //             bElementDisabled = false;
+    //             return;
+    //         }
+
+    //         bElementDisabled = true;
+
+    //         timer_Pomodoro = new Timer(1000);
+
+    //         // Call the NewTick method every second.
+    //         timer_Pomodoro.Elapsed += NewTickPomodoro;
+    //         timer_Pomodoro.Enabled = true;
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"StartTimerPomodoro ex: {ex.Message}");
+    //     }
+    // }
+
+    // private void ResetTimerPomodoro()
+    // {
+    //     try
+    //     {
+    //         timer_Pomodoro.Stop();
+    //         timer_Pomodoro.Close();
+    //         timer_Pomodoro.Dispose();
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"ResetTimerPomodoro ex: {ex.Message}");
+    //     }
+    // }
+
+    // private void NewTickPomodoro(Object source, ElapsedEventArgs e)
+    // {
+    //     bool bUpdateDisplay = false;
+
+    //     if (countdown_Secs > 0)
+    //     {
+    //         bUpdateDisplay = true;
+    //         countdown_Secs -= 1;
+    //     }
+    //     else
+    //     {
+    //         bUpdateDisplay = true;
+    //         countdown_Secs = 59;
+    //         if (countdown_Hrs > 0 && countdown_Mins == 0)
+    //         {
+    //             countdown_Mins = 59;
+    //         }
+    //         else
+    //         {
+    //             countdown_Mins -= 1;
+    //         }
+    //     }
+
+    //     if (countdown_Hrs > 0 && countdown_Mins == 59 && countdown_Secs == 59)
+    //     {
+    //         countdown_Hrs -= 1;
+    //         bUpdateDisplay = true;
+    //     }
+
+    //     if (countdown_Hrs == 0 && countdown_Mins == 0 && countdown_Secs == 0)
+    //     {
+
+    //         ResetTimer();
+    //         DisplayNotification();
+    //     }
+
+    //     if (bUpdateDisplay) { InvokeAsync(StateHasChanged); }
+    // }
+
+    // private void test()
+    // {
+
+    //     if (pomodoroCyclesCompleted % 4 != 0)
+    //     {
+    //         bSBreakRunning = true;
+    //         countdownPomodoro_Mins = setSBreakDuration_Mins;
+    //         countdownPomodoro_Secs = 0;
+    //     }
+    //     else
+    //     {
+    //         bLBreakRunning = true;
+    //         countdownPomodoro_Mins = setLBreakDuration_Mins;
+    //         countdownPomodoro_Secs = 0;
+    //     }
+
+    //     Console.WriteLine("Pomodoro cycle completed.");
+    // }
+    ///
 }
