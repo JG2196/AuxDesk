@@ -16,18 +16,6 @@
 
 <button type="button" class="btn" @onclick="StartTimer">Start/Stop</button>
 <button type="button" class="btn" @onclick="@(() => ResetTimer(false))">Reset</button>
-<br />
-<br />
-<br />
-<h3>Pomodoro Dev</h3>
-<br />
-<input type="number" @bind="selectedCycles" min="1" max="100" disabled="@bElementDisabled" />
-<p>Pomodoro Count: @pomodoroCycles</p>
-<p>Pomodoro timer - @currentTimer.ToString("D2")</p>
-
-<button type="button" class="btn" @onclick="StartTimerPomodoro">Start/Stop</button>
-<button type="button" class="btn" @onclick="@(() => ResetTimer(true))">Reset</button>
-
 
 @code {
 
@@ -36,7 +24,6 @@
     Timer? timer = null;
 
     int selectedDuration = 0;
-    int selectedCycles = 4;
     // For storing the set duration
     int setDuration_Hrs;
     int setDuration_Mins;
@@ -166,94 +153,6 @@
         });
         //.Show(); // Not seeing the Show() method? Make sure you have version 7.0, and if you're using .NET 6 (or later), then your TFM must be net6.0-windows10.0.17763.0 or greater
     }
-    ///
-
-    ///
-    // Pomodoro Methods
-    Timer? timer_Pomodoro = null;
-
-    int pomodoroCycles = 0;
-    int workDuration_Mins = 10;
-    int shortBreakDuration_Mins = 5;
-    int longBreakDuration_Mins = 15;
-    int currentTimer = 0;
-    bool bOnBreak = false;
-    bool pomodoroStarted = false;
-
-    private void StartTimerPomodoro()
-    {
-        try
-        {
-            PauseTimer(timer_Pomodoro);
-
-            if (!pomodoroStarted)
-            {
-                bElementDisabled = true;
-                pomodoroStarted = true;
-                currentTimer = workDuration_Mins;
-            }
-
-            timer_Pomodoro = new Timer(1000);
-
-            // Call the NewTickPomodoro method every second.
-            timer_Pomodoro.Elapsed += NewTickPomodoro;
-            timer_Pomodoro.Enabled = true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"StartTimerPomodoro ex: {ex.Message}");
-        }
-    }
-
-    private void NewTickPomodoro(Object source, ElapsedEventArgs e)
-    {
-        string message = "";
-
-        if (pomodoroCycles >= selectedCycles)
-        {
-            DisplayNotification("Cycles completed");
-
-            // Reset timer
-            ResetTimer(true);
-            bElementDisabled = false;
-            return;
-        }
-
-        if (currentTimer > 0)
-        {
-            currentTimer--;
-        }
-        else if (currentTimer == 0 && bOnBreak)
-        {
-            bOnBreak = false;
-            currentTimer = workDuration_Mins;
-
-            message = "Break over! Time to work.";
-            DisplayNotification(message);
-
-        }
-        else if (currentTimer == 0 && !bOnBreak)
-        {
-            // Timer finished
-            pomodoroCycles++;
-            bOnBreak = true;
-            if (pomodoroCycles % 4 == 0)
-            {
-                currentTimer = longBreakDuration_Mins;
-                message = "Work session over! Time for a long break.";
-            }
-            else
-            {
-                currentTimer = shortBreakDuration_Mins;
-                message = "Work session over! Time for a short break.";
-            }
-            if (pomodoroCycles < selectedCycles)
-            {
-                DisplayNotification(message);
-            }
-        }
-        InvokeAsync(StateHasChanged);
-    }
 
     private void ResetTimer(bool bIsPomodoro)
     {
@@ -261,11 +160,11 @@
         {
             if (bIsPomodoro)
             {
-                TimerCleanUp(timer_Pomodoro);
-                currentTimer = workDuration_Mins;
-                bOnBreak = false;
-                pomodoroStarted = false;
-                pomodoroCycles = 0;
+                // TimerCleanUp(timer_Pomodoro);
+                // currentTimer = workDuration_Mins;
+                // bOnBreak = false;
+                // pomodoroStarted = false;
+                // pomodoroCycles = 0;
             }
             else
             {
