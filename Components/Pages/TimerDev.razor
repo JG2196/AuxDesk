@@ -1,5 +1,7 @@
 @using System.Timers;
-@using Microsoft.Toolkit.Uwp.Notifications;
+@using Services;
+
+@inject ITimerService _timerService
 
 @page "/timerdev"
 
@@ -15,7 +17,7 @@
 <p>Timer - @countdown_Hrs.ToString("D2"):@countdown_Mins.ToString("D2"):@countdown_Secs.ToString("D2")</p>
 
 <button type="button" class="btn" @onclick="StartTimer">Start/Stop</button>
-<button type="button" class="btn" @onclick="@(() => ResetTimer(false))">Reset</button>
+<button type="button" class="btn" @onclick="ResetTimer">Reset</button>
 
 @code {
 
@@ -34,10 +36,6 @@
     int countdown_Mins;
     int countdown_Secs;
 
-    bool bCustomDurationSet = false;
-    bool bTimerRunning = false;
-    bool bTimerReset = false;
-
     private bool bElementDisabled = false;
 
     protected override void OnInitialized()
@@ -45,13 +43,12 @@
         SelectDuration(selectedDuration);
     }
 
-    ///
     // Timer Methods
     private void StartTimer()
     {
         try
         {
-            if (!PauseTimer(timer))
+            if (!_timerService.PauseTimer(timer))
             {
                 bElementDisabled = false;
                 return;
@@ -103,8 +100,8 @@
         if (countdown_Hrs == 0 && countdown_Mins == 0 && countdown_Secs == 0)
         {
 
-            ResetTimer(false);
-            DisplayNotification("Timmer done");
+            ResetTimer();
+            _timerService.DisplayNotification("Timmer done");
         }
 
         if (bUpdateDisplay) { InvokeAsync(StateHasChanged); }
@@ -140,37 +137,14 @@
                 break;
         }
     }
-    public void DisplayNotification(string message)
-    {
-        // Requires Microsoft.Toolkit.Uwp.Notifications NuGet package version 7.0 or greater
-        new ToastContentBuilder()
-        //.AddArgument("action", "viewConversation")
-        //.AddArgument("conversationId", 9813)
-        .AddText(message)
-        .Show(toast =>
-        {
-            toast.ExpirationTime = DateTime.Now.AddDays(1);
-        });
-        //.Show(); // Not seeing the Show() method? Make sure you have version 7.0, and if you're using .NET 6 (or later), then your TFM must be net6.0-windows10.0.17763.0 or greater
-    }
 
-    private void ResetTimer(bool bIsPomodoro)
+    private void ResetTimer()
     {
         try
         {
-            if (bIsPomodoro)
-            {
-                // TimerCleanUp(timer_Pomodoro);
-                // currentTimer = workDuration_Mins;
-                // bOnBreak = false;
-                // pomodoroStarted = false;
-                // pomodoroCycles = 0;
-            }
-            else
-            {
-                TimerCleanUp(timer);
-                SelectDuration(selectedDuration);
-            }
+            _timerService.TimerCleanUp(timer);
+            SelectDuration(selectedDuration);
+            
             bElementDisabled = false;
             InvokeAsync(StateHasChanged);
         }
@@ -178,23 +152,5 @@
         {
             Console.WriteLine($"ResetTimer ex: {ex.Message}");
         }
-    }
-
-    private void TimerCleanUp(Timer timer)
-    {
-        timer.Stop();
-        timer.Dispose();
-    }
-    private bool PauseTimer(Timer timer)
-    {
-        bool bTimerIsRunning = true;
-
-        if (timer != null && timer.Enabled)
-        {
-            timer.Stop();
-            bTimerIsRunning = false;
-        }
-
-        return bTimerIsRunning;
     }
 }

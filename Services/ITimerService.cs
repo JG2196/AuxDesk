@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace AuxDesk.Services
 {
-    using AuxDesk.Models;
-
     public interface ITimerService
     {
-        Task<List<TaskItem>> GetTaskItemsAsync(DateOnly? selectedDate);
+        Task DisplayNotification(string message);
+        //Task ResetTimer(bool bIsPomodoro);
+        bool PauseTimer(System.Timers.Timer timer);
+        Task TimerCleanUp(System.Timers.Timer timer);
     }
 }

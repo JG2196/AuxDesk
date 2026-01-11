@@ -45,6 +45,7 @@ namespace AuxDesk
             services.AddSingleton<ITaskRepository, JSONTaskRepository>();
             services.AddSingleton<IRecycleRepository, JSONRecycleRepository>();
             services.AddSingleton<ITaskService, TaskService>();
+            services.AddSingleton<ITimerService, TimerService>();
             services.AddSingleton<AppInitialiser>();
             services.AddSingleton<CRONInitialiser>();
         }

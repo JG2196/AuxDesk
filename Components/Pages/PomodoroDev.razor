@@ -1,5 +1,7 @@
 @using System.Timers;
-@using Microsoft.Toolkit.Uwp.Notifications;
+@using Services;
+
+@inject ITimerService _timerService
 
 @page "/pomodorodev"
 
@@ -11,7 +13,7 @@
 <p>Pomodoro timer - @currentTimer.ToString("D2")</p>
 
 <button type="button" class="btn" @onclick="StartTimerPomodoro">Start/Stop</button>
-<button type="button" class="btn" @onclick="@(() => ResetTimer(true))">Reset</button>
+<button type="button" class="btn" @onclick="ResetTimer">Reset</button>
 
 
 @code {
@@ -24,22 +26,6 @@
 
     private bool bElementDisabled = false;
 
-    public void DisplayNotification(string message)
-    {
-        // Requires Microsoft.Toolkit.Uwp.Notifications NuGet package version 7.0 or greater
-        new ToastContentBuilder()
-        //.AddArgument("action", "viewConversation")
-        //.AddArgument("conversationId", 9813)
-        .AddText(message)
-        .Show(toast =>
-        {
-            toast.ExpirationTime = DateTime.Now.AddDays(1);
-        });
-        //.Show(); // Not seeing the Show() method? Make sure you have version 7.0, and if you're using .NET 6 (or later), then your TFM must be net6.0-windows10.0.17763.0 or greater
-    }
-    ///
-
-    ///
     // Pomodoro Methods
     Timer? timer_Pomodoro = null;
 
@@ -55,7 +41,11 @@
     {
         try
         {
-            PauseTimer(timer_Pomodoro);
+
+            if (!_timerService.PauseTimer(timer_Pomodoro))
+            {
+                return;
+            }
 
             if (!pomodoroStarted)
             {
@@ -82,10 +72,10 @@
 
         if (pomodoroCycles >= selectedCycles)
         {
-            DisplayNotification("Cycles completed");
+            _timerService.DisplayNotification("Cycles completed");
 
             // Reset timer
-            ResetTimer(true);
+            ResetTimer();
             bElementDisabled = false;
             return;
         }
@@ -100,7 +90,7 @@
             currentTimer = workDuration_Mins;
 
             message = "Break over! Time to work.";
-            DisplayNotification(message);
+            _timerService.DisplayNotification(message);
 
         }
         else if (currentTimer == 0 && !bOnBreak)
@@ -120,29 +110,22 @@
             }
             if (pomodoroCycles < selectedCycles)
             {
-                DisplayNotification(message);
+                _timerService.DisplayNotification(message);
             }
         }
         InvokeAsync(StateHasChanged);
     }
 
-    private void ResetTimer(bool bIsPomodoro)
+    private void ResetTimer()
     {
         try
         {
-            if (bIsPomodoro)
-            {
-                TimerCleanUp(timer_Pomodoro);
-                currentTimer = workDuration_Mins;
-                bOnBreak = false;
-                pomodoroStarted = false;
-                pomodoroCycles = 0;
-            }
-            else
-            {
-                // TimerCleanUp(timer);
-                // SelectDuration(selectedDuration);
-            }
+            _timerService.TimerCleanUp(timer_Pomodoro);
+            currentTimer = workDuration_Mins;
+            bOnBreak = false;
+            pomodoroStarted = false;
+            pomodoroCycles = 0;
+            
             bElementDisabled = false;
             InvokeAsync(StateHasChanged);
         }
@@ -150,23 +133,5 @@
         {
             Console.WriteLine($"ResetTimer ex: {ex.Message}");
         }
-    }
-
-    private void TimerCleanUp(Timer timer)
-    {
-        timer.Stop();
-        timer.Dispose();
-    }
-    private bool PauseTimer(Timer timer)
-    {
-        bool bTimerIsRunning = true;
-
-        if (timer != null && timer.Enabled)
-        {
-            timer.Stop();
-            bTimerIsRunning = false;
-        }
-
-        return bTimerIsRunning;
     }
 }
