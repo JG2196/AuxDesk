@@ -8,9 +8,9 @@ namespace AuxDesk.Services
 {
     public interface ITimerService
     {
-        Task DisplayNotification(string message);
+        void DisplayNotification(string message);
         //Task ResetTimer(bool bIsPomodoro);
         bool PauseTimer(System.Timers.Timer timer);
-        Task TimerCleanUp(System.Timers.Timer timer);
+        void TimerCleanUp(System.Timers.Timer timer);
     }
 }

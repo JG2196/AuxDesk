@@ -10,7 +10,7 @@ namespace AuxDesk.Services
 {
     public class TimerService : ITimerService
     {
-        public async Task DisplayNotification(string message)
+        public void DisplayNotification(string message)
         {
             // Requires Microsoft.Toolkit.Uwp.Notifications NuGet package version 7.0 or greater
             new ToastContentBuilder()
@@ -39,7 +39,7 @@ namespace AuxDesk.Services
 
             return bTimerIsRunning;
         }
-        public async Task TimerCleanUp(System.Timers.Timer timer)
+        public void TimerCleanUp(System.Timers.Timer timer)
         {
             timer.Stop();
             timer.Dispose();
