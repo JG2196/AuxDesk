@@ -1,0 +1,21 @@
+﻿@page "/timers"
+<ul class="nav nav-tabs" id="timerTab">
+    <li class="nav-item">
+        <button class="nav-link active" id="tab_Countdown" data-bs-toggle="tab" data-bs-target="#tab_CountdownPane" type="button" aria-controls="tab_CountdownPane" aria-selected="true">Countdown</button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" id="tab_Pomodoro" data-bs-toggle="tab" data-bs-target="#tab_PomodoroPane" type="button" role="tab" aria-controls="tab_PomodoroPane" aria-selected="false">Pomodoro</button>
+    </li>
+</ul>
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="tab_CountdownPane" aria-labelledby="tab_Countdown" tabindex="0">
+        <TimerDev></TimerDev>
+    </div>
+    <div class="tab-pane fade" id="tab_PomodoroPane" aria-labelledby="tab_Pomodoro" tabindex="0">
+        <PomodoroDev></PomodoroDev>
+    </div>
+</div>
+
+@code {
+
+}

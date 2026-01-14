@@ -5,17 +5,14 @@
 
 @page "/pomodorodev"
 
-<h3>Pomodoro Dev</h3>
-<br />
-<div class="card position-absolute start-50 top-0 translate-middle border border-primary p-1 rounded-3" style="width:430px;border-color:#28c7fc !important; margin-top:200px">
+<div class="card border border-primary p-1 rounded-3" style="width:350px;border-color:#28c7fc !important;">
     <div class="card-body">
-        <p class="fs-4 fw-semibold text-center">Pomodoro</p>
         <div class="text-center mb-3">
             <span class="badge rounded-pill text-bg-primary" style="@pill_Pomodoro">Pomodoro</span>
             <span class="badge rounded-pill text-bg-primary" style="@pill_ShrtBreak">Short Break</span>
             <span class="badge rounded-pill text-bg-primary" style="@pill_LngBreak">Long Break</span>
         </div>
-        <p class="fs-2 fw-bold text-center">@currentTimer.ToString("D2")</p>
+        <p class="fs-2 fw-bold text-center">@FormattedTime</p>
         <p class="text-center">@pomodoroCycles / <input type="number" min="1" max="99" @bind="selectedCycles" disabled="@bElementDisabled" /></p>
         
         <div class="row justify-content-center">
@@ -54,9 +51,9 @@
     Timer? timer_Pomodoro = null;
 
     int pomodoroCycles = 0;
-    int workDuration_Mins = 10;
-    int shortBreakDuration_Mins = 5;
-    int longBreakDuration_Mins = 15;
+    int workDuration_Mins = 1500;
+    int shortBreakDuration_Mins = 300;
+    int longBreakDuration_Mins = 1800;
     int currentTimer = 0;
     bool bOnBreak = false;
     bool pomodoroStarted = false;
@@ -70,6 +67,16 @@
     string ui_BtnSelected = "color: black !important; background-color: #28c7fc !important";
     string ui_Btn = "border:solid lightgrey 1px";
 
+    private string FormattedTime
+    {
+        get
+        {
+            int minutes = currentTimer / 60;
+            int seconds = currentTimer % 60;
+            return $"{minutes:D2}:{seconds:D2}";
+        }
+    }
+
     protected override void OnInitialized()
     {
         pill_Pomodoro = ui_Pill;
@@ -77,7 +84,7 @@
         pill_LngBreak = ui_Pill;
     }
 
-    private void StartTimerPomodoro()
+    public void StartTimerPomodoro()
     {
         try
         {
@@ -183,6 +190,8 @@
             pomodoroStarted = false;
             pomodoroCycles = 0;
             pill_Pomodoro = ui_Pill;
+            pill_ShrtBreak = ui_Pill;
+            pill_LngBreak = ui_Pill;
             btn_StartPause = ui_Btn;
             bElementDisabled = false;
             InvokeAsync(StateHasChanged);
