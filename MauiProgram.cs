@@ -48,6 +48,8 @@ namespace AuxDesk
             services.AddSingleton<ITimerService, TimerService>();
             services.AddSingleton<AppInitialiser>();
             services.AddSingleton<CRONInitialiser>();
+
+            services.AddSingleton<ProtoITimerService, ProtoTimerService>();
         }
     }
 }

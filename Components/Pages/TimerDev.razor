@@ -7,7 +7,7 @@
 
 <div class="card border border-primary p-1 rounded-3" style="width:350px;border-color:#28c7fc !important;">
     <div class="card-body">
-        <p class="fs-2 fw-bold text-center">@countdown_Hrs.ToString("D2"):@countdown_Mins.ToString("D2"):@countdown_Secs.ToString("D2")</p>
+        <p class="fs-2 fw-bold text-center">@FormattedTime</p>
 
         <div class="row justify-content-center mb-3">
             <div class="col-3">
@@ -45,21 +45,10 @@
 
 @code {
 
-    ///
     // Timer
     Timer? timer = null;
 
     int selectedDuration = 1;
-    // For storing the set duration
-    int setDuration_Hrs;
-    int setDuration_Mins;
-    int setDuration_Secs;
-
-    // For countdown display
-    int countdown_Hrs;
-    int countdown_Mins;
-    int countdown_Secs;
-
     string btn_30Mins = string.Empty;
     string btn_15Mins = string.Empty;
     string btn_1Hr = string.Empty;
@@ -67,6 +56,17 @@
 
     string ui_BtnSelected = "color: black; background-color: #28c7fc";
     string ui_Btn = "border:solid lightgrey 1px";
+
+    int currentTimer = 0;
+
+    private string FormattedTime
+    {
+        get
+        {
+            var time = TimeSpan.FromSeconds(currentTimer);
+            return $"{(int)time.TotalHours:D2}:{time.Minutes:D2}:{time.Seconds:D2}";
+        }
+    }
 
     private bool bElementDisabled = false;
 
@@ -106,34 +106,14 @@
     {
         bool bUpdateDisplay = false;
 
-        if (countdown_Secs > 0)
+        if (currentTimer > 0)
         {
             bUpdateDisplay = true;
-            countdown_Secs -= 1;
-        }
-        else
-        {
-            bUpdateDisplay = true;
-            countdown_Secs = 59;
-            if (countdown_Hrs > 0 && countdown_Mins == 0)
-            {
-                countdown_Mins = 59;
-            }
-            else
-            {
-                countdown_Mins -= 1;
-            }
+            currentTimer -= 1;
         }
 
-        if (countdown_Hrs > 0 && countdown_Mins == 59 && countdown_Secs == 59)
+        if (currentTimer == 0)
         {
-            countdown_Hrs -= 1;
-            bUpdateDisplay = true;
-        }
-
-        if (countdown_Hrs == 0 && countdown_Mins == 0 && countdown_Secs == 0)
-        {
-
             ResetTimer();
             _timerService.DisplayNotification("Timmer done");
         }
@@ -144,39 +124,22 @@
     private void SelectDuration(int duration)
     {
         selectedDuration = duration;
-        setDuration_Secs = 0;
-
         btn_30Mins = ui_Btn;
         btn_15Mins = ui_Btn;
         btn_1Hr = ui_Btn;
 
-    switch (duration)
+        switch (duration)
         {
             case 0:
-                setDuration_Hrs = 0;
-                setDuration_Mins = 15;
-                countdown_Hrs = 0;
-                countdown_Mins = 15;
-                countdown_Secs = 0;
-
+                currentTimer = 15 * 60;
                 btn_15Mins = ui_BtnSelected;
                 break;
             case 1:
-                setDuration_Hrs = 0;
-                setDuration_Mins = 30;
-                countdown_Hrs = 0;
-                countdown_Mins = 30;
-                countdown_Secs = 0;
-
+                currentTimer = 30 * 60;
                 btn_30Mins = ui_BtnSelected;
                 break;
             case 2:
-                setDuration_Hrs = 1;
-                setDuration_Mins = 0;
-                countdown_Hrs = 1;
-                countdown_Mins = 0;
-                countdown_Secs = 0;
-
+                currentTimer = 60 * 60;
                 btn_1Hr = ui_BtnSelected;
                 break;
         }

@@ -71,9 +71,8 @@
     {
         get
         {
-            int minutes = currentTimer / 60;
-            int seconds = currentTimer % 60;
-            return $"{minutes:D2}:{seconds:D2}";
+            var time = TimeSpan.FromSeconds(currentTimer);
+            return $"{(int)time.Minutes:D2}:{time.Seconds:D2}";
         }
     }
 
@@ -137,7 +136,7 @@
 
         if (currentTimer > 0)
         {
-            currentTimer--;
+            currentTimer -= 1;
         }
         else if (currentTimer == 0 && bOnBreak)
         {
@@ -156,9 +155,9 @@
             // Timer finished
             pomodoroCycles++;
             bOnBreak = true;
+            pill_Pomodoro = ui_Pill;
             if (pomodoroCycles % 4 == 0)
             {
-                pill_Pomodoro = ui_Pill;
                 pill_ShrtBreak = ui_Pill;
                 pill_LngBreak = ui_BtnSelected;
                 currentTimer = longBreakDuration_Mins;
@@ -166,7 +165,6 @@
             }
             else
             {
-                pill_Pomodoro = ui_Pill;
                 pill_LngBreak = ui_Pill;
                 pill_ShrtBreak = ui_BtnSelected;
                 currentTimer = shortBreakDuration_Mins;
