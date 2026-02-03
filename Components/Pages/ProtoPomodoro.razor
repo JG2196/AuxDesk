@@ -1,7 +1,193 @@
-﻿@page "/protopomodoro"
+﻿@using System.Timers;
+@using Services;
 
-<h3>Proto Pomodoro</h3>
+@inject ProtoITimerService _timerService
+
+@page "/protopomodoro"
+
+<div class="card border border-primary p-1 rounded-3" style="width:350px;border-color:#28c7fc !important;">
+    <div class="card-body">
+        <div class="text-center mb-3">
+            <span class="badge rounded-pill text-bg-primary" style="@pill_Pomodoro">Pomodoro</span>
+            <span class="badge rounded-pill text-bg-primary" style="@pill_ShrtBreak">Short Break</span>
+            <span class="badge rounded-pill text-bg-primary" style="@pill_LngBreak">Long Break</span>
+        </div>
+        <p class="fs-2 fw-bold text-center">@formattedTime</p>
+        <p class="text-center">@pomodoroCycles / <input type="number" min="1" max="99" @bind="selectedCycles" disabled="@bElementDisabled" /></p>
+
+        <div class="row justify-content-center">
+            <div class="col-3">
+                <button type="button" class="btn fw-semibold" @onclick="StartTimer" style="width:70px; @btn_StartPause">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+                        <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393" />
+                    </svg><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pause-fill" viewBox="0 0 16 16">
+                        <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5m5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5" />
+                    </svg>
+                </button>
+            </div>
+            <div class="col-3">
+                <button type="button" class="btn fw-semibold" @onclick="ResetTimer" style="width:70px; border:solid lightgrey 1px">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z" />
+                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
+    int selectedCycles;
 
+    bool bTimerRunning = false;
+    bool bTimerReset = false;
+
+    private bool bElementDisabled = false;
+
+    // Pomodoro Methods
+    Timer? timer_Pomodoro = null;
+
+    int pomodoroCycles = 0;
+    int workDuration_Mins = 1500;
+    int shortBreakDuration_Mins = 300;
+    int longBreakDuration_Mins = 1800;
+    int currentTimer = 0;
+    bool bOnBreak = false;
+    bool pomodoroStarted = false;
+
+    string pill_Pomodoro = string.Empty;
+    string pill_ShrtBreak = string.Empty;
+    string pill_LngBreak = string.Empty;
+    string btn_StartPause = "border:solid lightgrey 1px";
+
+    string ui_Pill = "background-color:rgba(4, 170, 109, 0) !important; border:solid lightgrey 1px";
+    string ui_BtnSelected = "color: black !important; background-color: #28c7fc !important";
+    string ui_Btn = "border:solid lightgrey 1px";
+
+    public string formattedTime = "00:00:00";
+
+    public bool pomodoroIsRunning = false;
+    public int pomodoroType;
+
+    protected override void OnInitialized()
+    {
+        pomodoroIsRunning = _timerService.Pomodoro_IsRunning();
+
+        _timerService.Pomodoro_OnTimerTick += UpdateTimerDisplay;
+        _timerService.Pomodoro_OnTimerStateChanged += UpdateTimerState;
+
+        //SetCountdownUI(_timerService.Countdown_GetPresetTimer());
+        pomodoroType = _timerService.Pomodoro_GetPomodoroType();
+        selectedCycles = _timerService.Pomodoro_GetSetCycles();
+        SetPomodoroUI(pomodoroType);
+        pomodoroCycles = _timerService.Pomodoro_GetCompletedCycles();
+        if (pomodoroIsRunning)
+        {
+            btn_StartPause = ui_BtnSelected;
+            bElementDisabled = true;
+            formattedTime = _timerService.GetFormattedTime();
+        }
+        else
+        {
+            _timerService.SetTimer(4);
+        }
+
+        //_timerService.Pomodoro_GetPomodoroType();
+
+        //SetPomodoroUI();
+
+    }
+    private void UpdateTimerDisplay()
+    {
+        formattedTime = _timerService.GetFormattedTime();
+        pomodoroCycles = _timerService.Pomodoro_GetCompletedCycles();
+        if (pomodoroType != _timerService.Pomodoro_GetPomodoroType())
+        {
+            pomodoroType = _timerService.Pomodoro_GetPomodoroType();
+            SetPomodoroUI(pomodoroType);
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+    private void UpdateTimerState()
+    {
+        pomodoroIsRunning = _timerService.Pomodoro_IsRunning();
+        btn_StartPause = pomodoroIsRunning ? ui_BtnSelected : ui_Btn;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void SetPomodoroUI(int type)
+    {
+        pill_ShrtBreak = ui_Pill;
+        pill_LngBreak = ui_Pill;
+        pill_Pomodoro = ui_Pill;
+
+        switch (type)
+        {
+            case 0:
+                pill_Pomodoro = ui_BtnSelected;
+                break;
+            case 1:
+                pill_ShrtBreak = ui_BtnSelected;
+                break;
+            case 2:
+                pill_LngBreak = ui_BtnSelected;
+                break;
+            case 3:
+                break;
+        }
+    }
+    public void StartTimer()
+    {
+        if (pomodoroIsRunning && !_timerService.Pomodoro_IsPaused())
+        {
+            _timerService.Pomodoro_PauseTimer();
+            btn_StartPause = ui_Btn;
+            bElementDisabled = false;
+            return;
+        }
+        else
+        {
+            _timerService.SetTimer(4);
+            _timerService.Pomodoro_StartTimer(selectedCycles);
+            //pomodoroType = 0;
+            SetPomodoroUI(pomodoroType);
+            bElementDisabled = true;
+            //SetPomodoroUI(pomodoroType);
+
+        }
+    }
+    public void StopTimer()
+    {
+        _timerService.Pomodoro_StopTimer();
+        bElementDisabled = false;
+    }
+    public void Dispose()
+    {
+        _timerService.Pomodoro_OnTimerTick -= UpdateTimerDisplay;
+        _timerService.Pomodoro_OnTimerStateChanged -= UpdateTimerState;
+    }
+    private void ResetTimer()
+    {
+        try
+        {
+            pomodoroIsRunning = false;
+            bElementDisabled = false;
+            btn_StartPause = ui_Btn;
+            _timerService.TimerCleanUp();
+            formattedTime = "00:00:00";
+            pomodoroCycles = 0;
+            pomodoroType = 0;
+            SetPomodoroUI(3);
+
+            _timerService.Pomodoro_ResetTimer();
+            //formattedTime = _timerService.GetFormattedTime();
+            //InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ResetTimer ex: {ex.Message}");
+        }
+    }
 }

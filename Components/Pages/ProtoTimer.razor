@@ -48,7 +48,6 @@
 @code {
     public string formattedTime = string.Empty;
     public bool countdownIsRunning = false;
-    public bool pomodoroIsRunning = false;
     public int selectedDuration = 1;
 
     string btn_30Mins = string.Empty;
@@ -61,26 +60,23 @@
 
     protected override void OnInitialized()
     {
-        countdownIsRunning = _timerService.bCountdownIsRunning();
-        pomodoroIsRunning = _timerService.bPomodoroIsRunning();
+        countdownIsRunning = _timerService.Countdown_IsRunning();
 
-        _timerService.OnTimerTick += UpdateTimerDisplay;
-        _timerService.OnTimerStateChanged += UpdateTimerState;
+        _timerService.Countdown_OnTimerTick += UpdateTimerDisplay;
+        _timerService.Countdown_OnTimerStateChanged += UpdateTimerState;
 
-        SetCountdownUI(_timerService.GetPresetTimer());
+        SetCountdownUI(_timerService.Countdown_GetPresetTimer());
 
         if (countdownIsRunning)
         {
             btn_StartPause = ui_BtnSelected;
             formattedTime = _timerService.GetFormattedTime();
         }
-        else if (pomodoroIsRunning)
+        else
         {
-            // Handle pomodoro UI
-        }
-        else if (!countdownIsRunning && !pomodoroIsRunning)
-        {
-            _timerService.SetTimer(selectedDuration);
+            _timerService.SetTimer(1);
+            btn_30Mins = ui_BtnSelected;
+            //_timerService.SetTimer(selectedDuration);
             formattedTime = _timerService.GetFormattedTime();
         }
     }
@@ -91,8 +87,7 @@
     }
     private void UpdateTimerState()
     {
-        countdownIsRunning = _timerService.bCountdownIsRunning();
-        pomodoroIsRunning = _timerService.bPomodoroIsRunning();
+        countdownIsRunning = _timerService.Countdown_IsRunning();
         btn_StartPause = countdownIsRunning ? ui_BtnSelected : ui_Btn;
         InvokeAsync(StateHasChanged);
     }
@@ -124,25 +119,25 @@
     }
     public void StartTimer()
     {
-        if (countdownIsRunning && !_timerService.bCountdownIsPaused())
+        if (countdownIsRunning && !_timerService.Countdown_IsPaused())
         {
-            _timerService.PauseTimer();
+            _timerService.Countdown_PauseTimer();
             btn_StartPause = ui_Btn;
             return;
         }
         else
         {
-            _timerService.StartTimer();
+            _timerService.Countdown_StartTimer();
         }
     }
     public void StopTimer()
     {
-        _timerService.StopTimer();
+        _timerService.Countdown_StopTimer();
     }
     public void Dispose()
     {
-        _timerService.OnTimerTick -= UpdateTimerDisplay;
-        _timerService.OnTimerStateChanged -= UpdateTimerState;
+        _timerService.Countdown_OnTimerTick -= UpdateTimerDisplay;
+        _timerService.Countdown_OnTimerStateChanged -= UpdateTimerState;
     }
     private void ResetTimer()
     {
