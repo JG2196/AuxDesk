@@ -40,21 +40,9 @@
 @code {
     int selectedCycles;
 
-    bool bTimerRunning = false;
-    bool bTimerReset = false;
-
     private bool bElementDisabled = false;
 
-    // Pomodoro Methods
-    Timer? timer_Pomodoro = null;
-
     int pomodoroCycles = 0;
-    int workDuration_Mins = 1500;
-    int shortBreakDuration_Mins = 300;
-    int longBreakDuration_Mins = 1800;
-    int currentTimer = 0;
-    bool bOnBreak = false;
-    bool pomodoroStarted = false;
 
     string pill_Pomodoro = string.Empty;
     string pill_ShrtBreak = string.Empty;
@@ -65,7 +53,7 @@
     string ui_BtnSelected = "color: black !important; background-color: #28c7fc !important";
     string ui_Btn = "border:solid lightgrey 1px";
 
-    public string formattedTime = "00:00:00";
+    public string formattedTime = "00:00";
 
     public bool pomodoroIsRunning = false;
     public int pomodoroType;
@@ -77,11 +65,11 @@
         _timerService.Pomodoro_OnTimerTick += UpdateTimerDisplay;
         _timerService.Pomodoro_OnTimerStateChanged += UpdateTimerState;
 
-        //SetCountdownUI(_timerService.Countdown_GetPresetTimer());
         pomodoroType = _timerService.Pomodoro_GetPomodoroType();
         selectedCycles = _timerService.Pomodoro_GetSetCycles();
         SetPomodoroUI(pomodoroType);
         pomodoroCycles = _timerService.Pomodoro_GetCompletedCycles();
+        
         if (pomodoroIsRunning)
         {
             btn_StartPause = ui_BtnSelected;
@@ -92,12 +80,8 @@
         {
             _timerService.SetTimer(2);
         }
-
-        //_timerService.Pomodoro_GetPomodoroType();
-
-        //SetPomodoroUI();
-
     }
+
     private void UpdateTimerDisplay()
     {
         formattedTime = _timerService.GetFormattedTime();
@@ -151,11 +135,8 @@
         {
             _timerService.SetTimer(2);
             _timerService.Pomodoro_StartTimer(selectedCycles);
-            //pomodoroType = 0;
             SetPomodoroUI(pomodoroType);
             bElementDisabled = true;
-            //SetPomodoroUI(pomodoroType);
-
         }
     }
     public void StopTimer()
@@ -176,14 +157,12 @@
             bElementDisabled = false;
             btn_StartPause = ui_Btn;
             _timerService.TimerCleanUp();
-            formattedTime = "00:00:00";
+            formattedTime = "00:00";
             pomodoroCycles = 0;
             pomodoroType = 0;
             SetPomodoroUI(3);
 
             _timerService.Pomodoro_ResetTimer();
-            //formattedTime = _timerService.GetFormattedTime();
-            //InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {

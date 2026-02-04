@@ -28,9 +28,9 @@
                             @selectedPriority
                         </button>
                         <ul class="dropdown-menu @(bPriorityMenuOpen ? "show" : "")" style="@(bPriorityMenuOpen ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
-                            <li><a class="dropdown-item" @onclick="@(() => SelectPriority(1))">High</a></li>
-                            <li><a class="dropdown-item" @onclick="@(() => SelectPriority(2))">Medium</a></li>
-                            <li><a class="dropdown-item" @onclick="@(() => SelectPriority(3))">Low</a></li>
+                            <li><a class="dropdown-item" @onclick="@(() => SelectPriority(1, true))">High</a></li>
+                            <li><a class="dropdown-item" @onclick="@(() => SelectPriority(2, true))">Medium</a></li>
+                            <li><a class="dropdown-item" @onclick="@(() => SelectPriority(3, true))">Low</a></li>
                         </ul>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
                             <div class="row">
                                 <div class="col">
                                     @if (userTask.StartDateTime == null) {
-                                        <p class="text-center fw-semibold" style="width:100px;background-color:green;border-radius:4px">Not started</p>
+                                        <p class="text-center fw-semibold" style="width:100px;border: solid 1px grey;border-radius:4px">Not started</p>
                                     }
                                     @if (userTask.StartDateTime != null && !userTask.IsDone)
                                     {
@@ -138,9 +138,9 @@
                                 @selectedPriority
                             </button>
                             <ul class="dropdown-menu @(bPriorityMenuOpen ? "show" : "")" style="@(bPriorityMenuOpen ? "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(0px, 40px, 0px);" : "")">
-                                <li><a class="dropdown-item" @onclick="@(() => SelectPriority(1))">High</a></li>
-                                <li><a class="dropdown-item" @onclick="@(() => SelectPriority(2))">Medium</a></li>
-                                <li><a class="dropdown-item" @onclick="@(() => SelectPriority(3))">Low</a></li>
+                                <li><a class="dropdown-item" @onclick="@(() => SelectPriority(1, false))">High</a></li>
+                                <li><a class="dropdown-item" @onclick="@(() => SelectPriority(2, false))">Medium</a></li>
+                                <li><a class="dropdown-item" @onclick="@(() => SelectPriority(3, false))">Low</a></li>
                             </ul>
                         </div>
                     </div>
@@ -206,7 +206,7 @@
 
     private bool bStatusMenuOpen = false;
     private string selectedStatus = "Not started";
-    private int taskStatus = 1;
+    private int taskStatus;
 
     private bool bElementDisabled = true;
 
@@ -249,7 +249,7 @@
         bPriorityMenuOpen = !bPriorityMenuOpen;
     }
 
-    private void SelectPriority(int priority)
+    private void SelectPriority(int priority, bool creatingNewTask)
     {
         taskPriority = priority;
         bPriorityMenuOpen = false;
@@ -258,7 +258,10 @@
         if (priority == 1) { selectedPriority = "High"; }
         else if (priority == 2) { selectedPriority = "Medium"; }
 
-        SetTaskBorderCol(priority);
+        if (!creatingNewTask)
+        {
+            SetTaskBorderCol(priority);
+        }
     }
 
     private void ToggleDropdownStatus()
@@ -392,18 +395,23 @@
     {
         selectedTaskItem = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
 
-        SelectPriority(selectedTaskItem.Priority);
+        SelectPriority(selectedTaskItem.Priority, false);
         SetTaskBorderCol(selectedTaskItem.Priority);
 
         if (selectedTaskItem.StartDateTime == null)
         {
+            taskStatus = 1;
             selectedStatus = "Not started";
         }
         else if (selectedTaskItem.StartDateTime != null && !selectedTaskItem.IsDone)
         {
+            taskStatus = 2;
             selectedStatus = "In progress";
         }
-        else { selectedStatus = "Done"; }
+        else {
+            taskStatus = 3;
+            selectedStatus = "Done"; 
+        }
 
         bElementDisabled = false;
     }

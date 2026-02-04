@@ -151,7 +151,7 @@ namespace AuxDesk.Services
         //
         public string GetFormattedTime()
         {
-            return $"{_remainingTime.Hours:D2}:{_remainingTime.Minutes:D2}:{_remainingTime.Seconds:D2}";
+            return $"{_remainingTime.Minutes:D2}:{_remainingTime.Seconds:D2}";
         }
         public void DisplayNotification(string message)
         {
