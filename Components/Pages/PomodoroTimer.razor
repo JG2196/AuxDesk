@@ -1,9 +1,9 @@
 ﻿@using System.Timers;
 @using Services;
 
-@inject ProtoITimerService _timerService
+@inject ITimerService _timerService
 
-@page "/protopomodoro"
+@page "/pomodoroTimer"
 
 <div class="card border border-primary p-1 rounded-3" style="width:350px;border-color:#28c7fc !important;">
     <div class="card-body">
@@ -90,7 +90,7 @@
         }
         else
         {
-            _timerService.SetTimer(4);
+            _timerService.SetTimer(2);
         }
 
         //_timerService.Pomodoro_GetPomodoroType();
@@ -149,7 +149,7 @@
         }
         else
         {
-            _timerService.SetTimer(4);
+            _timerService.SetTimer(2);
             _timerService.Pomodoro_StartTimer(selectedCycles);
             //pomodoroType = 0;
             SetPomodoroUI(pomodoroType);
