@@ -12,5 +12,6 @@ namespace AuxDesk.Data
     {
         Task<List<DeletedTaskItem>> GetAllAsync();
         Task SaveAsync(List<DeletedTaskItem> listTaskItems);
+        Task CreateFileAsync();
     }
 }

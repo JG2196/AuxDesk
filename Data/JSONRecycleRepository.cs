@@ -17,7 +17,11 @@ namespace AuxDesk.Data
         {
             List<DeletedTaskItem> listRecycledTaskItems = new List<DeletedTaskItem>();
 
-            if (!File.Exists(deletedTaskPath)) { return listRecycledTaskItems; }
+            if (!File.Exists(deletedTaskPath)) 
+            {
+                //await CreateFileAsync();
+                return listRecycledTaskItems; 
+            }
 
             var contents = File.ReadAllText(deletedTaskPath);
 
@@ -31,6 +35,13 @@ namespace AuxDesk.Data
         {
             var contents = JsonSerializer.Serialize(ListRecycledTaskItems);
             File.WriteAllText(deletedTaskPath, contents);
+        }
+        public async Task CreateFileAsync()
+        {
+            if (!File.Exists(deletedTaskPath))
+            {
+                File.WriteAllText(deletedTaskPath, "[]");
+            }
         }
     }
 }

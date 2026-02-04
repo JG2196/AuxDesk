@@ -12,5 +12,6 @@ namespace AuxDesk.Data
     {
         Task<List<TaskItem>> GetAllAsync();
         Task SaveAsync(List<TaskItem> listTaskItems);
+        Task CreateFileAsync();
     }
 }
