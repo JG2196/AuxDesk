@@ -10,8 +10,6 @@
 
 @page "/"
 
-<h3>AuxDesk</h3>
-
 <!-- Modal -->
 <div class="modal fade" id="modal_NewTask" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -181,14 +179,6 @@
                 <div class="input-group mt-3" style="flex:1;">
                     <textarea class="form-control" aria-label="With textarea" @bind="@selectedTaskItem.Notes" placeholder="Notes" disabled="@bElementDisabled"></textarea>
                 </div>
-            </div>
-        </div>
-    </div>
-    <div class="col" style="max-width: 380px;">
-        <div class="p-2">
-            <h6><b>Pomodoro</b></h6>
-            <div class="mx-auto" style="max-width: fit-content;">
-                <PomodoroTimer></PomodoroTimer>
             </div>
         </div>
     </div>
