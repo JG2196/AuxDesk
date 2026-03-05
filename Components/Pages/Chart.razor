@@ -1,42 +1,63 @@
 ﻿
 @page "/chart"
-<div >
+<div>
     <h1><b>Chart</b></h1>
 
     <ApexChart TItem="MyData"
-               Title="Sample Data"
-               Width="700"            
-    >
-               
+               Title="Task Burn Down"
+               Width="700"
+               Options="options">
 
         <ApexPointSeries TItem="MyData"
                          Items="Data"
-                         Name="Net Profit"
+                         Name="Completed"
                          SeriesType="SeriesType.Line"
                          XValue="e => e.Category"
-                         YValue="e=> e.NetProfit" />
+                         YValue="e => e.CompletedTasks" />
 
         <ApexPointSeries TItem="MyData"
                          Items="Data"
-                         Name="Revenue"
+                         Name="TotalTasks"
                          SeriesType="SeriesType.Line"
                          XValue="e => e.Category"
-                         YValue="e=> e.Revenue" />
+                         YValue="e => e.TotalTasks" />
+
     </ApexChart>
 </div>
+
 @code {
     private List<MyData> Data { get; set; } = new();
+    private ApexChartOptions<MyData> options;
+
     protected override void OnInitialized()
     {
-        Data.Add(new MyData { Category = "Jan", NetProfit = 12, Revenue = 33 });
-        Data.Add(new MyData { Category = "Feb", NetProfit = 43, Revenue = 42 });
-        Data.Add(new MyData { Category = "Mar", NetProfit = 112, Revenue = 23 });
+        options = new ApexChartOptions<MyData>
+        {
+            Stroke = new Stroke
+            {
+                DashArray = [0, 6],
+                Width = [3, 1]
+            },
+            Markers = new Markers
+            {
+                Size = [4, 0]
+            }
+            
+        };
+
+        Data.Add(new MyData { Category = "Mon", CompletedTasks = 0, TotalTasks = 2 });
+        Data.Add(new MyData { Category = "Tue", CompletedTasks = 2, TotalTasks = 4 });
+        Data.Add(new MyData { Category = "Wed", CompletedTasks = 10, TotalTasks = 10 });
+        Data.Add(new MyData { Category = "Thur", CompletedTasks = 8, TotalTasks = 9 });
+        Data.Add(new MyData { Category = "Fri", CompletedTasks = 3, TotalTasks = 7 });
+        Data.Add(new MyData { Category = "Sat", CompletedTasks = 0, TotalTasks = 0 });
+        Data.Add(new MyData { Category = "Sun", CompletedTasks = 0, TotalTasks = 0 });
     }
 
     public class MyData
     {
         public string Category { get; set; }
-        public int NetProfit { get; set; }
-        public int Revenue { get; set; }
+        public int CompletedTasks { get; set; }
+        public int TotalTasks { get; set; }
     }
 }
