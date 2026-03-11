@@ -1,0 +1,222 @@
+﻿
+@page "/chart"
+<div>
+    <h1><b>Line Chart</b></h1>
+
+    @* ApexChart support objects *@
+    <ApexChart TItem="MyData"
+               Title="Task Burn Down"
+               Width="700"
+               Options="options">
+
+        <ApexPointSeries TItem="MyData"
+                         Items="Data"
+                         Name="Completed"
+                         SeriesType="SeriesType.Line"
+                         XValue="e => e.Category"
+                         YValue="e => e.CompletedTasks" />
+
+        <ApexPointSeries TItem="MyData"
+                         Items="Data"
+                         Name="Total Tasks"
+                         SeriesType="SeriesType.Line"
+                         XValue="e => e.Category"
+                         YValue="e => e.TotalTasks" />
+
+    </ApexChart>
+</div>
+
+<div>
+    <h1><b>Column Chart</b></h1>
+
+    @* ApexChart support objects *@
+    <ApexChart TItem="PieData"
+               Title="Fruits"
+               Width="700"
+               Options="pieOptions">
+
+        <ApexPointSeries TItem="PieData"
+                         Items="pieData"
+                         SeriesType="SeriesType.Donut"
+                         XValue="e => e.Label"
+                         YValue="e => e.Value" />
+
+    </ApexChart>
+</div>
+
+@code {
+    // Line
+    private List<MyData> Data { get; set; } = new();
+
+    // ApexChart Options support to customise chart
+    private ApexChartOptions<MyData> options;
+
+    // Object for Pie
+    public class PieData
+    {
+        public string Label { get; set; }
+        public decimal Value { get; set; }
+        public int Total { get; set; }
+    }
+
+    // Pie options
+    private ApexChartOptions<PieData> pieOptions;
+    // Pie data
+    private List<PieData> pieData;
+
+    protected override void OnInitialized()
+    {
+        // Line options
+        options = new ApexChartOptions<MyData>
+        {
+            Chart = new ApexCharts.Chart
+            {
+                Toolbar = new Toolbar
+                {
+                    Show = false,
+                    Tools = new Tools
+                    {
+                        Download = false,
+                        Selection = false,
+                        Zoom = false,
+                        Zoomin = false,
+                        Zoomout = false,
+                        Pan = false
+                    }
+                },
+            },
+            Tooltip = new Tooltip
+            {
+                Theme = Mode.Dark
+            },
+            Stroke = new Stroke
+            {
+                DashArray = [0, 6],
+                Width = [3, 1]
+            },
+            Markers = new Markers
+            {
+                Size = [4, 0]
+            },
+            Xaxis = new XAxis
+            {
+                Labels = new XAxisLabels
+                {
+                    Style = new AxisLabelStyle
+                    {
+                        Colors = "#fff"
+                    }
+                }
+            },
+            Yaxis = new List<YAxis>
+            {
+                new YAxis
+                {
+                    Labels = new YAxisLabels
+                    {
+                        Style = new AxisLabelStyle
+                        {
+                            Colors = "#fff"
+                        }
+                    }
+                }
+            },
+            Legend = new Legend
+            {
+                Labels = new LegendLabels
+                {
+                    Colors = "#fff"
+                }
+            },
+            Title = new Title
+            {
+                Style = new ApexCharts.TitleStyle
+                {
+                    Color = "#fff"
+                }
+            }
+        };
+
+        // Pie data
+        pieData = new List<PieData>
+        {
+            new PieData { Label = "Not started", Value = 10, Total = 35 },
+            new PieData { Label = "In progress", Value = 20, Total = 35 },
+            new PieData { Label = "Completed", Value = 5, Total = 35 }
+        };
+
+        // Pie options
+        pieOptions = new ApexChartOptions<PieData>
+        {
+            PlotOptions = new PlotOptions
+            {
+                Pie = new PlotOptionsPie
+                {
+                    DataLabels = new PieDataLabels
+                    {
+                        Offset = 0,
+                        MinAngleToShowLabel = 1,   
+                    },
+                    Donut = new PlotOptionsDonut
+                    {
+                        Size = "65%",
+                        Background = "transparent",
+                        Labels = new DonutLabels
+                        {
+                            Value = new DonutLabelValue
+                            {
+                                Show = true,
+                                Color = "#fff",
+                            },
+                            Total = new DonutLabelTotal
+                            {
+                                Show = true,
+                                Label = "Total Number of Tasks",
+                                Color = "#fff"
+                            }
+                        }
+                    },
+
+                }
+            },
+            Legend = new Legend
+            {
+                Labels = new LegendLabels
+                {
+                    Colors = "#fff"
+                },
+            },
+            Title = new Title
+            {
+                Style = new ApexCharts.TitleStyle
+                {
+                    Color = "#fff"
+                },
+            }
+
+        };
+
+        // Line data
+        Data.Add(new MyData { Category = "Mon", CompletedTasks = 0, TotalTasks = 2 });
+        Data.Add(new MyData { Category = "Tue", CompletedTasks = 2, TotalTasks = 4 });
+        Data.Add(new MyData { Category = "Wed", CompletedTasks = 10, TotalTasks = 10 });
+        Data.Add(new MyData { Category = "Thur", CompletedTasks = 8, TotalTasks = 9 });
+        Data.Add(new MyData { Category = "Fri", CompletedTasks = 3, TotalTasks = 7 });
+        Data.Add(new MyData { Category = "Sat", CompletedTasks = 0, TotalTasks = 0 });
+        Data.Add(new MyData { Category = "Sun", CompletedTasks = 0, TotalTasks = 0 });
+
+    }
+
+    public class MyData
+    {
+        public string Category { get; set; }
+        public int CompletedTasks { get; set; }
+        public int TotalTasks { get; set; }
+    }
+
+    public string PercentCalc()
+    {
+        
+        return "10";
+    }
+}

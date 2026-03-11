@@ -361,7 +361,7 @@
                 listAllTaskItems = await _taskService.GetTaskItemsAsync(null);
             }
 
-            TaskItem itemToDelete = await _taskService.GetTaskItemAsync(listAllTaskItems, taskGUID);
+            TaskItem itemToDelete = _taskService.GetTaskItem(listAllTaskItems, taskGUID);
             itemToDelete.IsDeleted = true;
 
             if (listDeletedTaskItems.Count == 0)
@@ -381,9 +381,9 @@
         }
     }
 
-    private async void SelectTaskItem(string taskGUID)
+    private void SelectTaskItem(string taskGUID)
     {
-        selectedTaskItem = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
+        selectedTaskItem = _taskService.GetTaskItem(listTaskItems, taskGUID);
 
         SelectPriority(selectedTaskItem.Priority, false);
         SetTaskBorderCol(selectedTaskItem.Priority);

@@ -38,7 +38,7 @@ namespace AuxDesk.Services
                 return listTaskItems;
             }
         }
-        public async Task<TaskItem> GetTaskItemAsync(List<TaskItem> listTaskItems, string guid)
+        public TaskItem GetTaskItem(List<TaskItem> listTaskItems, string guid)
         {
             TaskItem taskItem = listTaskItems.FirstOrDefault(t => t.TaskGUID == guid);
             return taskItem;
@@ -90,4 +90,4 @@ namespace AuxDesk.Services
         //}
 
     }
-    }
+}
