@@ -265,9 +265,9 @@
         }
     }
 
-    private async void SelectTaskItem(string taskGUID)
+    private void SelectTaskItem(string taskGUID)
     {
-        selectedTaskItem = await _taskService.GetTaskItemAsync(listTaskItems, taskGUID);
+        selectedTaskItem = _taskService.GetTaskItem(listTaskItems, taskGUID);
         
         if (selectedTaskItem.Priority == 1) { TaskBorderCol = "red !important"; }
         else if (selectedTaskItem.Priority == 2) { TaskBorderCol = "yellow !important"; }
