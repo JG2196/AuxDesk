@@ -23,7 +23,7 @@ namespace AuxDesk.Data
                 return listRecycledTaskItems; 
             }
 
-            var contents = File.ReadAllTextAsync(deletedTaskPath);
+            var contents = File.ReadAllText(deletedTaskPath);
 
             var savedItems = JsonSerializer.Deserialize<List<DeletedTaskItem>>(contents);
             listRecycledTaskItems.AddRange(savedItems);
